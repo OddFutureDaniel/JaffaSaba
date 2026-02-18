@@ -1,0 +1,60 @@
+.homepage {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #hero {
+    position: relative;
+    width: 100vw;
+    height: 85vh;
+    overflow: hidden;
+    background: white;
+    padding-top: var(--header-height, 100px);
+    box-sizing: border-box;
+  }
+  
+  #hero-images {
+    position: absolute;
+    inset: 0;
+  }
+  
+  .hero-image {
+    position: absolute;
+    opacity: 0;
+    transform: none;
+  }
+  
+  .hero-image img {
+    max-height: 45vh;
+    max-width: 35vw;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  #shop-cta {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    text-align: center;
+  }
+  
+  #shop-cta a {
+    font-size: 40px;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    color: #1a0a00;
+    text-decoration: none;
+    border-bottom: 1px solid #1a0a00;
+  }
+  
+  #footer {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+  }

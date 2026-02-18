@@ -1,167 +1,196 @@
-import {Await, useLoaderData, Link} from 'react-router';
-import type {Route} from './+types/_index';
-import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
-import type {
-  FeaturedCollectionFragment,
-  RecommendedProductsQuery,
-} from 'storefrontapi.generated';
-import {ProductItem} from '~/components/ProductItem';
+import { useLoaderData } from 'react-router';
+import { useEffect, useRef } from 'react';
+import type { Route } from './+types/_index';
+import gsap from 'gsap';
+import '~/styles/homepage.css';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{ title: 'Jaffa Saba' }];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
+  const { context } = args;
+  const { storefront } = context;
 
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
-async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}] = await Promise.all([
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    // Add other queries here, so that they are loaded in parallel
-  ]);
+  const { collection } = await storefront.query(SHOWCASE_QUERY);
 
   return {
-    featuredCollection: collections.nodes[0],
+    showcaseImages: collection?.products.nodes.map(
+      (p: any) => p.featuredImage
+    ) ?? [],
   };
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
-function loadDeferredData({context}: Route.LoaderArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error: Error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
+const SHOWCASE_QUERY = `#graphql
+  query ShowcaseImages {
+    collection(handle: "homepage-showcase") {
+      products(first: 10) {
+        nodes {
+          featuredImage {
+            url
+            altText
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+` as const;
+
+const getRandomPosition = (placed: { top: number; left: number; w: number; h: number }[]) => {
+  const imgW = 30;
+  const imgH = 35;
+  const maxAttempts = 20;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const top = 5 + Math.random() * 40;
+    const left = 5 + Math.random() * 60;
+
+    const overlapping = placed.some(p => {
+      const overlapX = Math.max(0, Math.min(left + imgW, p.left + p.w) - Math.max(left, p.left));
+      const overlapY = Math.max(0, Math.min(top + imgH, p.top + p.h) - Math.max(top, p.top));
+      const overlapArea = overlapX * overlapY;
+      const imgArea = imgW * imgH;
+      return overlapArea / imgArea > 0.3;
     });
 
-  return {
-    recommendedProducts,
-  };
-}
+    if (!overlapping) return { top, left, w: imgW, h: imgH };
+  }
+
+  return { top: 5 + Math.random() * 40, left: 5 + Math.random() * 60, w: imgW, h: imgH };
+};
 
 export default function Homepage() {
-  const data = useLoaderData<typeof loader>();
-  return (
-    <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
-    </div>
-  );
-}
+  const { showcaseImages } = useLoaderData<typeof loader>();
+  const heroRef = useRef<HTMLElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const imagesRef = useRef<HTMLDivElement[]>([]);
 
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
+  useEffect(() => {
+    if (showcaseImages.length === 0) return;
 
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
+    document.body.style.overflow = 'hidden';
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const intervals: ReturnType<typeof setInterval>[] = [];
+
+    const totalImages = imagesRef.current.length;
+    const visibleDuration = 2.5;
+    const fadeIn = 1.5;
+    const fadeOut = 1;
+    const gapBetween = 1;
+    const cycleDuration = fadeIn + visibleDuration + fadeOut + gapBetween;
+
+    imagesRef.current.forEach((img, i) => {
+      const cycle = () => {
+        // Get current positions of all other visible images
+        const placed = imagesRef.current
+          .filter((_, idx) => idx !== i)
+          .map(el => {
+            const rect = el.getBoundingClientRect();
+            const heroRect = heroRef.current!.getBoundingClientRect();
+            return {
+              top: ((rect.top - heroRect.top) / heroRect.height) * 100,
+              left: ((rect.left - heroRect.left) / heroRect.width) * 100,
+              w: 30,
+              h: 35,
+            };
+          });
+
+        const pos = getRandomPosition(placed);
+        gsap.set(img, { top: `${pos.top}%`, left: `${pos.left}%` });
+
+        gsap.timeline()
+          .to(img, { opacity: 1, duration: fadeIn, ease: 'power2.inOut' })
+          .to(img, { opacity: 0, duration: fadeOut, ease: 'power2.inOut', delay: visibleDuration });
+      };
+
+      const staggerDelay = (cycleDuration / totalImages) * i * 1000;
+
+      const t = setTimeout(() => {
+        cycle();
+        const iv = setInterval(cycle, cycleDuration * 1000);
+        intervals.push(iv);
+      }, staggerDelay);
+
+      timers.push(t);
+    });
+
+    let scrollY = 0;
+    const maxScroll = 2500;
+    let unlocked = false;
+    let unlockTimeout: ReturnType<typeof setTimeout>;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      scrollY = Math.max(0, Math.min(maxScroll, scrollY + e.deltaY));
+      const progress = scrollY / maxScroll;
+
+      gsap.to(ctaRef.current, {
+        opacity: progress,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+
+      if (scrollY >= maxScroll && !unlocked) {
+        unlockTimeout = setTimeout(() => {
+          unlocked = true;
+          document.body.style.overflow = '';
+          window.removeEventListener('wheel', handleWheel);
+        }, 1000);
+      } else if (scrollY < maxScroll) {
+        clearTimeout(unlockTimeout);
+      }
+    };
+
+    const handleScroll = () => {
+      if (window.scrollY === 0 && unlocked) {
+        unlocked = false;
+        scrollY = maxScroll;
+        document.body.style.overflow = 'hidden';
+        window.addEventListener('wheel', handleWheel, { passive: false });
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      intervals.forEach(clearInterval);
+      clearTimeout(unlockTimeout);
+      document.body.style.overflow = '';
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [showcaseImages]);
+
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
+    <main className="homepage">
+      <section id="hero" ref={heroRef}>
+        <div id="hero-images">
+          {showcaseImages.map((image: any, i: number) => (
+            <div
+              key={i}
+              className="hero-image"
+              ref={(el) => {
+                if (el) imagesRef.current[i] = el;
+              }}
+            >
+              <img src={image.url} alt={image.altText ?? ''} />
             </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
+          ))}
+        </div>
+
+        <div id="shop-cta" ref={ctaRef}>
+          <a href="/collections/all">Shop New Items</a>
+        </div>
+      </section>
+
+      <footer id="footer">
+        <p>© Jaffa Saba</p>
+      </footer>
+    </main>
   );
 }
-
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-` as const;
-
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
-      }
-    }
-  }
-` as const;

@@ -12,6 +12,10 @@ img {
   border-radius: 4px;
 }
 
+.realmain {
+  padding-top: 140px!important;
+}
+
 /*
 * --------------------------------------------------
 * Non anchor links
@@ -42,6 +46,7 @@ aside {
   right: calc(-1 * var(--aside-width));
   top: 0;
   transition: transform 200ms ease-in-out;
+  
 }
 
 aside header {
@@ -255,6 +260,7 @@ button.reset:hover:not(:has(> *)) {
   max-height: calc(100vh - var(--cart-aside-summary-height));
   overflow-y: auto;
   width: auto;
+  
 }
 
 .cart-main.with-discount {
@@ -280,6 +286,7 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .cart-summary-aside {
+  
   background: white;
   border-top: 1px solid var(--color-dark);
   bottom: 0;
@@ -592,3 +599,4 @@ button.reset:hover:not(:has(> *)) {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
