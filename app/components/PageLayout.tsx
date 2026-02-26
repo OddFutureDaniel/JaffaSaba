@@ -14,6 +14,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {StorePageProvider, useStorePageContext} from '~/components/StorePageContext';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -24,7 +25,7 @@ interface PageLayoutProps {
   children?: React.ReactNode;
 }
 
-export function PageLayout({
+function PageLayoutInner({
   cart,
   children = null,
   footer,
@@ -32,12 +33,14 @@ export function PageLayout({
   isLoggedIn,
   publicStoreDomain,
 }: PageLayoutProps) {
+  const {hideGlobalLayout} = useStorePageContext();
+
   return (
     <Aside.Provider>
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
-      {header && (
+      {header && !hideGlobalLayout && (
         <Header
           header={header}
           cart={cart}
@@ -45,13 +48,23 @@ export function PageLayout({
           publicStoreDomain={publicStoreDomain}
         />
       )}
-      <main className='realmain'>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      <main className="realmain">{children}</main>
+      {!hideGlobalLayout && (
+        <Footer
+          footer={footer}
+          header={header}
+          publicStoreDomain={publicStoreDomain}
+        />
+      )}
     </Aside.Provider>
+  );
+}
+
+export function PageLayout(props: PageLayoutProps) {
+  return (
+    <StorePageProvider>
+      <PageLayoutInner {...props} />
+    </StorePageProvider>
   );
 }
 

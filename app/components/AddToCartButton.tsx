@@ -1,19 +1,25 @@
-import {type FetcherWithComponents} from 'react-router';
+import type {FetcherWithComponents} from 'react-router';
 import {CartForm, type OptimisticCartLineInput} from '@shopify/hydrogen';
 
-export function AddToCartButton({
-  analytics,
-  children,
-  disabled,
-  lines,
-  onClick,
-}: {
+type AddToCartButtonProps = {
   analytics?: unknown;
   children: React.ReactNode;
   disabled?: boolean;
   lines: Array<OptimisticCartLineInput>;
   onClick?: () => void;
-}) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+export function AddToCartButton(props: AddToCartButtonProps) {
+  const {
+    analytics,
+    children,
+    disabled,
+    lines,
+    onClick,
+    // allow className, id, data-*, aria-*, etc
+    ...buttonProps
+  } = props;
+
   return (
     <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
       {(fetcher: FetcherWithComponents<any>) => (
@@ -21,12 +27,13 @@ export function AddToCartButton({
           <input
             name="analytics"
             type="hidden"
-            value={JSON.stringify(analytics)}
+            value={analytics ? JSON.stringify(analytics) : ''}
           />
           <button
             type="submit"
+            {...buttonProps}
             onClick={onClick}
-            disabled={disabled ?? fetcher.state !== 'idle'}
+            disabled={disabled || fetcher.state !== 'idle'}
           >
             {children}
           </button>

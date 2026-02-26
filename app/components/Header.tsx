@@ -1,10 +1,9 @@
-import {Suspense} from 'react';
+import {Suspense, useState} from 'react';
 import {Await, Link} from 'react-router';
-import {useOptimisticCart} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import '~/styles/header.css';
-import {ShoppingBag} from 'lucide-react';
+import {ShoppingBag, Menu} from 'lucide-react';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -14,15 +13,23 @@ interface HeaderProps {
 }
 
 export function Header({header, cart}: HeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header id="header">
       <nav id="header-nav">
+
+        {/* Hamburger — mobile only */}
+        <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+          <Menu size={22} strokeWidth={1.5} color="#1a0a00" />
+        </button>
 
         <div className="nav-left">
           <Link to="/">Home</Link>
           <Link to="/collections/all">Store</Link>
         </div>
 
+        {/* Logo absolutely centred always */}
         <div className="nav-logo">
           <Link to="/">
             <img src="/JaffaWordmarkTransparent(1).png" alt="Jaffa Saba" />
@@ -30,12 +37,21 @@ export function Header({header, cart}: HeaderProps) {
         </div>
 
         <div className="nav-right">
-          <Link to="/pages/portfolio">Portfolio</Link>
-          <Link to="/pages/contact">Contact</Link>
+          <Link className="nav-portfolio" to="/pages/portfolio">Portfolio</Link>
+          <Link className="nav-contact" to="/pages/contact">Contact</Link>
           <CartToggle cart={cart} />
         </div>
 
       </nav>
+
+      {menuOpen && (
+        <div className="mobile-menu">
+          <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Store</Link>
+          <Link to="/pages/portfolio" onClick={() => setMenuOpen(false)}>Portfolio</Link>
+          <Link to="/pages/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
+        </div>
+      )}
     </header>
   );
 }
@@ -69,4 +85,3 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
     </Suspense>
   );
 }
-

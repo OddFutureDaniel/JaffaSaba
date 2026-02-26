@@ -1,4 +1,4 @@
-import { useLoaderData } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
 import { useEffect, useRef } from 'react';
 import type { Route } from './+types/_index';
 import gsap from 'gsap';
@@ -11,9 +11,7 @@ export const meta: Route.MetaFunction = () => {
 export async function loader(args: Route.LoaderArgs) {
   const { context } = args;
   const { storefront } = context;
-
   const { collection } = await storefront.query(SHOWCASE_QUERY);
-
   return {
     showcaseImages: collection?.products.nodes.map(
       (p: any) => p.featuredImage
@@ -24,7 +22,7 @@ export async function loader(args: Route.LoaderArgs) {
 const SHOWCASE_QUERY = `#graphql
   query ShowcaseImages {
     collection(handle: "homepage-showcase") {
-      products(first: 10) {
+      products(first: 15) {
         nodes {
           featuredImage {
             url
@@ -38,27 +36,46 @@ const SHOWCASE_QUERY = `#graphql
   }
 ` as const;
 
-const getRandomPosition = (placed: { top: number; left: number; w: number; h: number }[]) => {
-  const imgW = 30;
-  const imgH = 35;
-  const maxAttempts = 20;
+const IMG_W = 19; // % of viewport width
+const IMG_H = 28; // % of viewport height — fixed so top range is usable
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const top = 5 + Math.random() * 40;
-    const left = 5 + Math.random() * 60;
+const getBestPosition = (placed: { top: number; left: number; w: number; h: number }[]) => {
+  const candidates = 40;
+  let bestPos = { top: 10, left: 10, w: IMG_W, h: IMG_H };
+  let bestScore = -Infinity;
+
+  for (let attempt = 0; attempt < candidates; attempt++) {
+    // top range: 10% to 60% (leaves room for image height)
+    const top = 10 + Math.random() * 50;
+    // left range: 5% to 75% (leaves room for image width)
+    const left = 5 + Math.random() * 70;
 
     const overlapping = placed.some(p => {
-      const overlapX = Math.max(0, Math.min(left + imgW, p.left + p.w) - Math.max(left, p.left));
-      const overlapY = Math.max(0, Math.min(top + imgH, p.top + p.h) - Math.max(top, p.top));
+      const overlapX = Math.max(0, Math.min(left + IMG_W, p.left + p.w) - Math.max(left, p.left));
+      const overlapY = Math.max(0, Math.min(top + IMG_H, p.top + p.h) - Math.max(top, p.top));
       const overlapArea = overlapX * overlapY;
-      const imgArea = imgW * imgH;
-      return overlapArea / imgArea > 0.3;
+      return overlapArea / (IMG_W * IMG_H) > 0.1;
     });
 
-    if (!overlapping) return { top, left, w: imgW, h: imgH };
+    if (overlapping) continue;
+
+    const score = placed.length === 0
+      ? Math.random() * 100
+      : placed.reduce((acc, p) => {
+          const cx = left + IMG_W / 2;
+          const cy = top + IMG_H / 2;
+          const pcx = p.left + p.w / 2;
+          const pcy = p.top + p.h / 2;
+          return acc + Math.sqrt(Math.pow(cx - pcx, 2) + Math.pow(cy - pcy, 2));
+        }, 0);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestPos = { top, left, w: IMG_W, h: IMG_H };
+    }
   }
 
-  return { top: 5 + Math.random() * 40, left: 5 + Math.random() * 60, w: imgW, h: imgH };
+  return bestPos;
 };
 
 export default function Homepage() {
@@ -66,103 +83,76 @@ export default function Homepage() {
   const heroRef = useRef<HTMLElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLDivElement[]>([]);
+  const activePositions = useRef<Map<number, { top: number; left: number; w: number; h: number }>>(new Map());
+  const queueRef = useRef<number[]>([]);
+  const schedulerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (showcaseImages.length === 0) return;
 
-    document.body.style.overflow = 'hidden';
-
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    const intervals: ReturnType<typeof setInterval>[] = [];
-
     const totalImages = imagesRef.current.length;
-    const visibleDuration = 2.5;
-    const fadeIn = 1.5;
-    const fadeOut = 1;
-    const gapBetween = 1;
-    const cycleDuration = fadeIn + visibleDuration + fadeOut + gapBetween;
+    const visibleDuration = 4000;
+    const fadeIn = 2;
+    const fadeOut = 2;
+    const fadeOutMs = fadeOut * 1000;
+    const interval = 1500; // ms between each new image appearing
 
-    imagesRef.current.forEach((img, i) => {
-      const cycle = () => {
-        // Get current positions of all other visible images
-        const placed = imagesRef.current
-          .filter((_, idx) => idx !== i)
-          .map(el => {
-            const rect = el.getBoundingClientRect();
-            const heroRect = heroRef.current!.getBoundingClientRect();
-            return {
-              top: ((rect.top - heroRect.top) / heroRect.height) * 100,
-              left: ((rect.left - heroRect.left) / heroRect.width) * 100,
-              w: 30,
-              h: 35,
-            };
-          });
+    // Build shuffled queue of image indices
+    const buildQueue = () => {
+      const q = Array.from({ length: totalImages }, (_, i) => i);
+      // shuffle
+      for (let i = q.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [q[i], q[j]] = [q[j], q[i]];
+      }
+      return q;
+    };
 
-        const pos = getRandomPosition(placed);
-        gsap.set(img, { top: `${pos.top}%`, left: `${pos.left}%` });
+    queueRef.current = buildQueue();
 
-        gsap.timeline()
-          .to(img, { opacity: 1, duration: fadeIn, ease: 'power2.inOut' })
-          .to(img, { opacity: 0, duration: fadeOut, ease: 'power2.inOut', delay: visibleDuration });
-      };
+    const showNext = () => {
+      if (queueRef.current.length === 0) {
+        queueRef.current = buildQueue();
+      }
 
-      const staggerDelay = (cycleDuration / totalImages) * i * 1000;
+      const i = queueRef.current.shift()!;
+      const img = imagesRef.current[i];
+      if (!img) return;
 
-      const t = setTimeout(() => {
-        cycle();
-        const iv = setInterval(cycle, cycleDuration * 1000);
-        intervals.push(iv);
-      }, staggerDelay);
+      const placed = Array.from(activePositions.current.values());
+      const pos = getBestPosition(placed);
 
-      timers.push(t);
-    });
+      activePositions.current.set(i, pos);
+      gsap.set(img, { top: `${pos.top}%`, left: `${pos.left}%`, opacity: 0 });
 
-    let scrollY = 0;
-    const maxScroll = 2500;
-    let unlocked = false;
-    let unlockTimeout: ReturnType<typeof setTimeout>;
+      gsap.timeline()
+        .to(img, { opacity: 1, duration: fadeIn, ease: 'power2.inOut' })
+        .to(img, { opacity: 0, duration: fadeOut, ease: 'power2.inOut', delay: visibleDuration / 1000 })
+        .call(() => activePositions.current.delete(i));
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      scrollY = Math.max(0, Math.min(maxScroll, scrollY + e.deltaY));
-      const progress = scrollY / maxScroll;
+      schedulerRef.current = setTimeout(showNext, interval);
+    };
 
+    showNext();
+
+    const maxScroll = 900;
+    const handleScroll = () => {
+      const progress = Math.min(window.scrollY / maxScroll, 1);
       gsap.to(ctaRef.current, {
         opacity: progress,
         duration: 0.3,
         ease: 'power2.out',
       });
-
-      if (scrollY >= maxScroll && !unlocked) {
-        unlockTimeout = setTimeout(() => {
-          unlocked = true;
-          document.body.style.overflow = '';
-          window.removeEventListener('wheel', handleWheel);
-        }, 1000);
-      } else if (scrollY < maxScroll) {
-        clearTimeout(unlockTimeout);
-      }
     };
 
-    const handleScroll = () => {
-      if (window.scrollY === 0 && unlocked) {
-        unlocked = false;
-        scrollY = maxScroll;
-        document.body.style.overflow = 'hidden';
-        window.addEventListener('wheel', handleWheel, { passive: false });
-      }
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('scroll', handleScroll);
 
     return () => {
-      timers.forEach(clearTimeout);
-      intervals.forEach(clearInterval);
-      clearTimeout(unlockTimeout);
-      document.body.style.overflow = '';
-      window.removeEventListener('wheel', handleWheel);
+      if (schedulerRef.current) clearTimeout(schedulerRef.current);
       window.removeEventListener('scroll', handleScroll);
+      document.body.style.overflow = '';
+      activePositions.current.clear();
+      gsap.killTweensOf(imagesRef.current);
     };
   }, [showcaseImages]);
 
@@ -184,13 +174,9 @@ export default function Homepage() {
         </div>
 
         <div id="shop-cta" ref={ctaRef}>
-          <a href="/collections/all">Shop New Items</a>
+          <Link to="/collections/all">Shop New Items</Link>
         </div>
       </section>
-
-      <footer id="footer">
-        <p>© Jaffa Saba</p>
-      </footer>
     </main>
   );
 }
