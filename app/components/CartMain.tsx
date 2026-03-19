@@ -4,12 +4,18 @@ import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {CartLineItem, type CartLine} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
+import {CartForm} from '@shopify/hydrogen';
 
 export type CartLayout = 'page' | 'aside';
 
 export type CartMainProps = {
   cart: CartApiQueryFragment | null;
   layout: CartLayout;
+  freeGift?: {
+    title: string;
+    featuredImage: {url: string; altText: string | null} | null;
+    variants: {nodes: {id: string; availableForSale: boolean}[]};
+  } | null;
 };
 
 export type LineItemChildrenMap = {[parentId: string]: CartLine[]};
@@ -36,11 +42,8 @@ function getLineItemChildrenMap(lines: CartLine[]): LineItemChildrenMap {
  * The main cart component that displays the cart items and summary.
  * It is used by both the /cart route and the cart aside dialog.
  */
-export function CartMain({layout, cart: originalCart}: CartMainProps) {
-  // The useOptimisticCart hook applies pending actions to the cart
-  // so the user immediately sees feedback when they modify the cart.
+export function CartMain({layout, cart: originalCart, freeGift}: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
-
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
   const withDiscount =
     cart &&
@@ -49,21 +52,21 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
   const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
   const childrenMap = getLineItemChildrenMap(cart?.lines?.nodes ?? []);
 
+  const freeGiftVariantId = freeGift?.variants?.nodes?.[0]?.id;
+  const freeGiftAvailable = freeGift?.variants?.nodes?.[0]?.availableForSale;
+  const freeGiftAlreadyInCart = cart?.lines?.nodes?.some(
+    (line) => line.merchandise.id === freeGiftVariantId
+  );
+
   return (
     <div className={className}>
       <CartEmpty hidden={linesCount} layout={layout} />
       <div className="cart-details">
-        <p id="cart-lines" className="sr-only">
-          Line items
-        </p>
+        <p id="cart-lines" className="sr-only">Line items</p>
         <div>
           <ul aria-labelledby="cart-lines">
             {(cart?.lines?.nodes ?? []).map((line) => {
-              // we do not render non-parent lines at the root of the cart
-              if (
-                'parentRelationship' in line &&
-                line.parentRelationship?.parent
-              ) {
+              if ('parentRelationship' in line && line.parentRelationship?.parent) {
                 return null;
               }
               return (
@@ -77,6 +80,38 @@ export function CartMain({layout, cart: originalCart}: CartMainProps) {
             })}
           </ul>
         </div>
+
+        {/* Free gift promo */}
+        {cartHasItems && freeGift && freeGiftAvailable && !freeGiftAlreadyInCart && (
+          <div className="free-gift-box">
+            <p className="free-gift-label">ELIGIBLE</p>
+            <div className="free-gift-inner">
+              {freeGift.featuredImage && (
+                <img
+                  src={freeGift.featuredImage.url}
+                  alt={freeGift.featuredImage.altText ?? freeGift.title}
+                  className="free-gift-image"
+                />
+              )}
+              <div className="free-gift-info">
+                <p className="free-gift-title">{freeGift.title}</p>
+                <p className="free-gift-price">Free</p>
+                <CartForm
+                  route="/cart"
+                  action={CartForm.ACTIONS.LinesAdd}
+                  inputs={{
+                    lines: [{merchandiseId: freeGiftVariantId, quantity: 1}],
+                  }}
+                >
+                  <button type="submit" className="free-gift-btn">
+                    Add to bag
+                  </button>
+                </CartForm>
+              </div>
+            </div>
+          </div>
+        )}
+
         {cartHasItems && <CartSummary cart={cart} layout={layout} />}
       </div>
     </div>
@@ -94,12 +129,11 @@ function CartEmpty({
     <div hidden={hidden}>
       <br />
       <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
+      Empty. That's embarrassing.
       </p>
       <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
+      <Link to="/collections/all" onClick={close} prefetch="viewport">
+        Go fix that →
       </Link>
     </div>
   );

@@ -1,5 +1,5 @@
 import { Link, useLoaderData } from 'react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Route } from './+types/_index';
 import gsap from 'gsap';
 import '~/styles/homepage.css';
@@ -9,10 +9,15 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  const { context } = args;
+  const { context, request } = args;
   const { storefront } = context;
   const { collection } = await storefront.query(SHOWCASE_QUERY);
+
+  const cookieHeader = request.headers.get('Cookie') ?? '';
+  const isMobile = cookieHeader.includes('viewport=mobile');
+
   return {
+    isMobile,
     showcaseImages: collection?.products.nodes.map(
       (p: any) => p.featuredImage
     ) ?? [],
@@ -36,8 +41,8 @@ const SHOWCASE_QUERY = `#graphql
   }
 ` as const;
 
-const IMG_W = 19; // % of viewport width
-const IMG_H = 28; // % of viewport height — fixed so top range is usable
+const IMG_W = 19;
+const IMG_H = 28;
 
 const getBestPosition = (placed: { top: number; left: number; w: number; h: number }[]) => {
   const candidates = 40;
@@ -45,9 +50,7 @@ const getBestPosition = (placed: { top: number; left: number; w: number; h: numb
   let bestScore = -Infinity;
 
   for (let attempt = 0; attempt < candidates; attempt++) {
-    // top range: 10% to 60% (leaves room for image height)
     const top = 10 + Math.random() * 50;
-    // left range: 5% to 75% (leaves room for image width)
     const left = 5 + Math.random() * 70;
 
     const overlapping = placed.some(p => {
@@ -62,12 +65,12 @@ const getBestPosition = (placed: { top: number; left: number; w: number; h: numb
     const score = placed.length === 0
       ? Math.random() * 100
       : placed.reduce((acc, p) => {
-          const cx = left + IMG_W / 2;
-          const cy = top + IMG_H / 2;
-          const pcx = p.left + p.w / 2;
-          const pcy = p.top + p.h / 2;
-          return acc + Math.sqrt(Math.pow(cx - pcx, 2) + Math.pow(cy - pcy, 2));
-        }, 0);
+        const cx = left + IMG_W / 2;
+        const cy = top + IMG_H / 2;
+        const pcx = p.left + p.w / 2;
+        const pcy = p.top + p.h / 2;
+        return acc + Math.sqrt(Math.pow(cx - pcx, 2) + Math.pow(cy - pcy, 2));
+      }, 0);
 
     if (score > bestScore) {
       bestScore = score;
@@ -79,7 +82,8 @@ const getBestPosition = (placed: { top: number; left: number; w: number; h: numb
 };
 
 export default function Homepage() {
-  const { showcaseImages } = useLoaderData<typeof loader>();
+
+  const { showcaseImages, isMobile: serverIsMobile } = useLoaderData<typeof loader>();
   const heroRef = useRef<HTMLElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLDivElement[]>([]);
@@ -87,20 +91,27 @@ export default function Homepage() {
   const queueRef = useRef<number[]>([]);
   const schedulerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [isMobile, setIsMobile] = useState<boolean>(serverIsMobile);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 750);
+    const handleResize = () => setIsMobile(window.innerWidth <= 750);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     if (showcaseImages.length === 0) return;
+    if (isMobile) return;
 
     const totalImages = imagesRef.current.length;
     const visibleDuration = 4000;
     const fadeIn = 2;
     const fadeOut = 2;
-    const fadeOutMs = fadeOut * 1000;
-    const interval = 1500; // ms between each new image appearing
+    const interval = 1500;
 
-    // Build shuffled queue of image indices
     const buildQueue = () => {
       const q = Array.from({ length: totalImages }, (_, i) => i);
-      // shuffle
       for (let i = q.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [q[i], q[j]] = [q[j], q[i]];
@@ -154,28 +165,40 @@ export default function Homepage() {
       activePositions.current.clear();
       gsap.killTweensOf(imagesRef.current);
     };
-  }, [showcaseImages]);
+  }, [showcaseImages, isMobile]);
 
   return (
     <main className="homepage">
       <section id="hero" ref={heroRef}>
-        <div id="hero-images">
-          {showcaseImages.map((image: any, i: number) => (
-            <div
-              key={i}
-              className="hero-image"
-              ref={(el) => {
-                if (el) imagesRef.current[i] = el;
-              }}
-            >
-              <img src={image.url} alt={image.altText ?? ''} />
-            </div>
-          ))}
-        </div>
 
-        <div id="shop-cta" ref={ctaRef}>
-          <Link to="/collections/all">Shop New Items</Link>
-        </div>
+        {/* Show nothing until client has measured viewport */}
+        {isMobile === null ? null : isMobile ? (
+          <div id="mobile-hero">
+            <img
+              src="https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_7344_e846ad79-9da7-4d1a-86a1-c0d7f76040b0.jpg?v=1771438811"
+              alt="Jaffa Saba"
+            />
+            <Link to="/collections/all" id="mobile-hero-cta">Enter</Link>
+          </div>
+        ) : (
+          <>
+            <div id="hero-images">
+              {showcaseImages.map((image: any, i: number) => (
+                <div
+                  key={i}
+                  className="hero-image"
+                  ref={(el) => { if (el) imagesRef.current[i] = el; }}
+                >
+                  <img src={image.url} alt={image.altText ?? ''} />
+                </div>
+              ))}
+            </div>
+            <div id="shop-cta" ref={ctaRef}>
+              <Link to="/collections/all">Shop New Items</Link>
+            </div>
+          </>
+        )}
+
       </section>
     </main>
   );

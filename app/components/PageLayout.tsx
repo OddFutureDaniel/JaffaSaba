@@ -1,4 +1,4 @@
-import {Await, Link} from 'react-router';
+import {Await, Link, useLocation} from 'react-router';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,
@@ -23,6 +23,11 @@ interface PageLayoutProps {
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
   children?: React.ReactNode;
+  freeGift?: {
+    title: string;
+    featuredImage: {url: string; altText: string | null} | null;
+    variants: {nodes: {id: string; availableForSale: boolean}[]};
+  } | null;
 }
 
 function PageLayoutInner({
@@ -32,12 +37,15 @@ function PageLayoutInner({
   header,
   isLoggedIn,
   publicStoreDomain,
+  freeGift,
 }: PageLayoutProps) {
   const {hideGlobalLayout} = useStorePageContext();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   return (
     <Aside.Provider>
-      <CartAside cart={cart} />
+      <CartAside cart={cart} freeGift={freeGift} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && !hideGlobalLayout && (
@@ -49,7 +57,7 @@ function PageLayoutInner({
         />
       )}
       <main className="realmain">{children}</main>
-      {!hideGlobalLayout && (
+      {!isHomePage && (
         <Footer
           footer={footer}
           header={header}
@@ -68,13 +76,19 @@ export function PageLayout(props: PageLayoutProps) {
   );
 }
 
-function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
+function CartAside({
+  cart,
+  freeGift,
+}: {
+  cart: PageLayoutProps['cart'];
+  freeGift: PageLayoutProps['freeGift'];
+}) {
   return (
-    <Aside type="cart" heading="CART">
+    <Aside type="cart" heading="Your Bag">
       <Suspense fallback={<p>Loading cart ...</p>}>
         <Await resolve={cart}>
           {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
+            return <CartMain cart={cart} layout="aside" freeGift={freeGift} />;
           }}
         </Await>
       </Suspense>

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { Search, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { useAside } from '~/components/Aside';
+import { useStorePageContext } from '~/components/StorePageContext';
 
 interface NavItem {
   title: string;
@@ -33,9 +35,8 @@ export function StoreLayout({
   mainColumns = '4 / 12',
 }: StoreLayoutProps) {
   const { open } = useAside();
-
-
-
+  const { setHideGlobalLayout } = useStorePageContext();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="store-page">
@@ -48,6 +49,15 @@ export function StoreLayout({
             </Link>
           </div>
           <div className="store-header-icons">
+            <button
+              className="icon-btn mobile-hamburger"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen
+                ? <X size={20} strokeWidth={1.5} color="#1a0a00" />
+                : <Menu size={20} strokeWidth={1.5} color="#1a0a00" />
+              }
+            </button>
             <button className="icon-btn" onClick={() => open('search')}>
               <Search size={18} strokeWidth={1.5} color="#1a0a00" />
             </button>
@@ -56,6 +66,20 @@ export function StoreLayout({
             </button>
           </div>
         </header>
+
+        {mobileMenuOpen && (
+          <div className="store-mobile-menu">
+            {[...primaryNav, ...categoryNav].map((item) => (
+              <Link
+                key={item.url}
+                to={item.url}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.title}
+              </Link>
+            ))}
+          </div>
+        )}
 
         <div className="store-spacer" />
 

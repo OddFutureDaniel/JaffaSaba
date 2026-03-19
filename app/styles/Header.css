@@ -172,3 +172,48 @@
       padding-left: 80px;
     }
   }
+
+  @media (max-width: 750px) {
+    #header {
+      top: 0;
+      padding: 16px 20px;
+    }
+  
+    #header-nav {
+      width: 100%;
+      position: relative;
+    }
+  
+    /* Reset the absolute centred logo */
+    .nav-logo {
+      position: static;
+      transform: none;
+      flex: 1;
+    }
+  
+    .nav-logo img {
+      height: 40px !important;
+    }
+  
+    /* Hide desktop nav links */
+    .nav-left {
+      display: none;
+    }
+  
+    /* Right side — hamburger + cart only */
+    .nav-right {
+      flex: 0;
+      gap: 16px;
+      padding-left: 0;
+    }
+  
+    /* Hide portfolio and contact */
+    .nav-portfolio,
+    .nav-contact {
+      display: none;
+    }
+  
+    .hamburger {
+      display: flex;
+    }
+  }

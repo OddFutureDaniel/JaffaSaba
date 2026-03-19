@@ -1,6 +1,6 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
-import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import { Suspense } from 'react';
+import { Await, Link } from 'react-router';
+import type { FooterQuery, HeaderQuery } from 'storefrontapi.generated';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -8,122 +8,72 @@ interface FooterProps {
   publicStoreDomain: string;
 }
 
-export function Footer({
-  footer: footerPromise,
-  header,
-  publicStoreDomain,
-}: FooterProps) {
+export function Footer({ footer: footerPromise }: FooterProps) {
   return (
     <Suspense>
       <Await resolve={footerPromise}>
-        {(footer) => (
+        {() => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="footer-grid">
+
+              {/* Left — Help */}
+              <div className="footer-section">
+                <p className="footer-heading">HELP</p>
+                <nav className="footer-nav">
+                  <Link to="/pages/size-guide">Size Guides</Link>
+                  <Link to="/policies/shipping-policy">Shipping</Link>
+                  <Link to="/pages/faqs">FAQs</Link>
+                  <Link to="/pages/contact">Contact Us</Link>
+                </nav>
+              </div>
+
+              {/* Middle — Engage */}
+              <div className="footer-section footer-section-center">
+                <p className="footer-heading">ENGAGE</p>
+                <p>Dont sleep. First to know. First to cop.</p>
+                <form
+                  className="footer-newsletter"
+                  onSubmit={(e) => e.preventDefault()}
+                >
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="footer-email-input"
+                    required
+                  />
+                  <button type="submit" className="footer-email-btn">
+                    Subscribe
+                  </button>
+                </form>
+                <p className="footer-disclaimer">
+                  By submitting this form you agree to receive updates about fly
+                  shit.{' '}
+                  <Link to="/policies/terms-of-service">View Terms</Link> and{' '}
+                  <Link to="/policies/privacy-policy">Privacy</Link>.
+                </p>
+                <div className="footer-socials">
+                  <div className="footer-socials">
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="footer-social-link">Instagram</a>
+                    <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="footer-social-link">TikTok</a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right — Logo */}
+              <div className="footer-section footer-section-right">
+                <Link to="/">
+                  <img
+                    src="/JaffaWordmarkTransparent(1).png"
+                    alt="Jaffa Saba"
+                    className="footer-logo"
+                  />
+                </Link>
+              </div>
+
+            </div>
           </footer>
         )}
       </Await>
     </Suspense>
   );
-}
-
-function FooterMenu({
-  menu,
-  primaryDomainUrl,
-  publicStoreDomain,
-}: {
-  menu: FooterQuery['menu'];
-  primaryDomainUrl: FooterProps['header']['shop']['primaryDomain']['url'];
-  publicStoreDomain: string;
-}) {
-  return (
-    <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith('/');
-        return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
-          </a>
-        ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
-
-const FALLBACK_FOOTER_MENU = {
-  id: 'gid://shopify/Menu/199655620664',
-  items: [
-    {
-      id: 'gid://shopify/MenuItem/461633060920',
-      resourceId: 'gid://shopify/ShopPolicy/23358046264',
-      tags: [],
-      title: 'Privacy Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/privacy-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633093688',
-      resourceId: 'gid://shopify/ShopPolicy/23358013496',
-      tags: [],
-      title: 'Refund Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/refund-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633126456',
-      resourceId: 'gid://shopify/ShopPolicy/23358111800',
-      tags: [],
-      title: 'Shipping Policy',
-      type: 'SHOP_POLICY',
-      url: '/policies/shipping-policy',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461633159224',
-      resourceId: 'gid://shopify/ShopPolicy/23358079032',
-      tags: [],
-      title: 'Terms of Service',
-      type: 'SHOP_POLICY',
-      url: '/policies/terms-of-service',
-      items: [],
-    },
-  ],
-};
-
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
 }
