@@ -169,6 +169,7 @@ export default function App() {
       </PageLayout>
     </Analytics.Provider>
   );
+  
 }
 
 export function ErrorBoundary() {
