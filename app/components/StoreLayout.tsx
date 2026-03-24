@@ -4,6 +4,7 @@ import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { useAside } from '~/components/Aside';
 import { useStorePageContext } from '~/components/StorePageContext';
 
+
 interface NavItem {
   title: string;
   url: string;
@@ -14,16 +15,18 @@ interface StoreLayoutProps {
   primaryNav?: NavItem[];
   categoryNav?: NavItem[];
   mainColumns?: string;
+  id?: string;
 }
 
 const DEFAULT_PRIMARY_NAV: NavItem[] = [
   { title: 'Home', url: '/' },
-  { title: 'Portfolio', url: '/pages/portfolio' },
+  // { title: 'Portfolio', url: '/pages/portfolio' },
   { title: 'Contact', url: '/pages/contact' },
 ];
 
 const DEFAULT_CATEGORY_NAV: NavItem[] = [
-  { title: 'Bandanas', url: '/collections/bandanas' },
+  { title: 'All', url: '/collections/all' },
+  { title: 'Auction', url: '/collections/auction' },
   { title: 'Lookbooks', url: '/collections/lookbooks' },
   { title: 'Accessories', url: '/collections/accessories' },
 ];
@@ -32,7 +35,8 @@ export function StoreLayout({
   children,
   primaryNav = DEFAULT_PRIMARY_NAV,
   categoryNav = DEFAULT_CATEGORY_NAV,
-  mainColumns = '4 / 12',
+  mainColumns,
+  id,
 }: StoreLayoutProps) {
   const { open } = useAside();
   const { setHideGlobalLayout } = useStorePageContext();
@@ -40,8 +44,8 @@ export function StoreLayout({
 
   return (
     <div className="store-page">
-      <div className="store-grid">
-
+  
+      <div className="store-grid-wrapper">
         <header className="store-header">
           <div className="store-header-logo">
             <Link to="/">
@@ -66,23 +70,25 @@ export function StoreLayout({
             </button>
           </div>
         </header>
-
-        {mobileMenuOpen && (
-          <div className="store-mobile-menu">
-            {[...primaryNav, ...categoryNav].map((item) => (
-              <Link
-                key={item.url}
-                to={item.url}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.title}
-              </Link>
-            ))}
-          </div>
-        )}
-
+      </div>
+  
+      {mobileMenuOpen && (
+        <div className="store-mobile-menu">
+          {[...primaryNav, ...categoryNav].map((item) => (
+            <Link
+              key={item.url}
+              to={item.url}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.title}
+            </Link>
+          ))}
+        </div>
+      )}
+  
+      <div className="store-grid">
         <div className="store-spacer" />
-
+  
         <div className="store-sidebar">
           <nav className="store-nav">
             <div className="store-nav-primary">
@@ -97,12 +103,14 @@ export function StoreLayout({
             </div>
           </nav>
         </div>
-
-        <div className="store-main" style={{ gridColumn: mainColumns }}>
+  
+        <div className="store-main" id={id} style={{ gridColumn: mainColumns }}>
           {children}
         </div>
-
       </div>
+  
     </div>
   );
+
+
 }

@@ -45,15 +45,15 @@
   }
   
   #shop-cta a {
-    font-family: 'Tenor Sans', sans-serif;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 700;
     font-size: 30px;
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: #1a0a00;
-    text-decoration: none;
+    text-decoration: none !important;
     border-bottom: 1px solid #1a0a00;
     padding-bottom: 3px;
-    font-weight: 600;
   }
   
   #footer {
@@ -75,7 +75,7 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     color: white;
-    text-decoration: none;
+    text-decoration: none !important;
     white-space: nowrap;
  
   }

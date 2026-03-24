@@ -5,7 +5,6 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
@@ -15,6 +14,8 @@ import {
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {StorePageProvider, useStorePageContext} from '~/components/StorePageContext';
+import {Search, X} from 'lucide-react';
+import {Aside, useAside} from '~/components/Aside';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -46,7 +47,7 @@ function PageLayoutInner({
   return (
     <Aside.Provider>
       <CartAside cart={cart} freeGift={freeGift} />
-      <SearchAside />
+      <SearchOverlay />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && !hideGlobalLayout && (
         <Header
@@ -96,42 +97,46 @@ function CartAside({
   );
 }
 
-function SearchAside() {
-  const queriesDatalistId = useId();
-  return (
-    <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
-        <br />
-        <SearchFormPredictive>
-          {({fetchResults, goToSearch, inputRef}) => (
-            <>
-              <input
-                name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
-            </>
-          )}
-        </SearchFormPredictive>
+function SearchOverlay() {
+  const {type, close} = useAside();
+  const isOpen = type === 'search';
+  const queriesDatalistId = 'predictive-search-queries';
 
+  if (!isOpen) return null;
+
+  return (
+    <div className="search-overlay">
+      <SearchFormPredictive>
+        {({fetchResults, inputRef}) => (
+          <div className="search-overlay-inner">
+            <Search size={18} strokeWidth={1.5} color="#1a0a00" />
+            <input
+              ref={inputRef}
+              name="q"
+              onChange={fetchResults}
+              onFocus={fetchResults}
+              placeholder="Search"
+              type="search"
+              list={queriesDatalistId}
+              className="search-overlay-input"
+              autoFocus
+            />
+            <button className="search-overlay-close" onClick={close}>
+              <X size={18} strokeWidth={1.5} color="#1a0a00" />
+            </button>
+          </div>
+        )}
+      </SearchFormPredictive>
+      <div className="search-overlay-results">
         <SearchResultsPredictive>
           {({items, total, term, state, closeSearch}) => {
-            const {articles, collections, pages, products, queries} = items;
-
+            const {products, queries} = items;
             if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
+              return <div className="search-loading">Searching...</div>;
             }
-
             if (!total) {
               return <SearchResultsPredictive.Empty term={term} />;
             }
-
             return (
               <>
                 <SearchResultsPredictive.Queries
@@ -143,38 +148,12 @@ function SearchAside() {
                   closeSearch={closeSearch}
                   term={term}
                 />
-                <SearchResultsPredictive.Collections
-                  collections={collections}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Pages
-                  pages={pages}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                <SearchResultsPredictive.Articles
-                  articles={articles}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-                {term.current && total ? (
-                  <Link
-                    onClick={closeSearch}
-                    to={`${SEARCH_ENDPOINT}?q=${term.current}`}
-                  >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
-                  </Link>
-                ) : null}
               </>
             );
           }}
         </SearchResultsPredictive>
       </div>
-    </Aside>
+    </div>
   );
 }
 

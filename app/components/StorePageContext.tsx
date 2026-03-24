@@ -3,8 +3,9 @@ import { useLocation } from 'react-router';
 
 const STORE_LAYOUT_ROUTES = [
   '/collections/all',
-  '/products/',
   '/collections/',
+  '/products/',
+  '/pages/',
 ];
 
 interface StorePageContextType {

@@ -1,10 +1,11 @@
-import {useOptimisticCart, type OptimisticCartLine} from '@shopify/hydrogen';
+import {useOptimisticCart} from '@shopify/hydrogen';
 import {Link} from 'react-router';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {CartLineItem, type CartLine} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
 import {CartForm} from '@shopify/hydrogen';
+import {useEffect, useRef} from 'react';
 
 export type CartLayout = 'page' | 'aside';
 
@@ -19,7 +20,7 @@ export type CartMainProps = {
 };
 
 export type LineItemChildrenMap = {[parentId: string]: CartLine[]};
-/** Returns a map of all line items and their children. */
+
 function getLineItemChildrenMap(lines: CartLine[]): LineItemChildrenMap {
   const children: LineItemChildrenMap = {};
   for (const line of lines) {
@@ -29,8 +30,8 @@ function getLineItemChildrenMap(lines: CartLine[]): LineItemChildrenMap {
       children[parentId].push(line);
     }
     if ('lineComponents' in line) {
-      const children = getLineItemChildrenMap(line.lineComponents);
-      for (const [parentId, childIds] of Object.entries(children)) {
+      const lineChildren = getLineItemChildrenMap(line.lineComponents);
+      for (const [parentId, childIds] of Object.entries(lineChildren)) {
         if (!children[parentId]) children[parentId] = [];
         children[parentId].push(...childIds);
       }
@@ -38,10 +39,19 @@ function getLineItemChildrenMap(lines: CartLine[]): LineItemChildrenMap {
   }
   return children;
 }
-/**
- * The main cart component that displays the cart items and summary.
- * It is used by both the /cart route and the cart aside dialog.
- */
+
+const FREE_GIFT_HANDLE = 'sample-gene-2023-dog-tags';
+
+function AutoSubmitForm() {
+  const ref = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    ref.current?.click();
+  }, []);
+
+  return <button ref={ref} type="submit" style={{display: 'none'}} />;
+}
+
 export function CartMain({layout, cart: originalCart, freeGift}: CartMainProps) {
   const cart = useOptimisticCart(originalCart);
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
@@ -49,14 +59,24 @@ export function CartMain({layout, cart: originalCart, freeGift}: CartMainProps) 
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
   const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
-  const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
   const childrenMap = getLineItemChildrenMap(cart?.lines?.nodes ?? []);
 
   const freeGiftVariantId = freeGift?.variants?.nodes?.[0]?.id;
   const freeGiftAvailable = freeGift?.variants?.nodes?.[0]?.availableForSale;
-  const freeGiftAlreadyInCart = cart?.lines?.nodes?.some(
-    (line) => line.merchandise.id === freeGiftVariantId
+
+  const freeGiftLine = cart?.lines?.nodes?.find(
+    (line) => line.merchandise.product.handle === FREE_GIFT_HANDLE
   );
+  const freeGiftLineId = freeGiftLine?.id;
+  const freeGiftAlreadyInCart = !!freeGiftLineId;
+
+  const nonGiftItemCount =
+    cart?.lines?.nodes?.filter(
+      (line) => line.merchandise.product.handle !== FREE_GIFT_HANDLE
+    ).length ?? 0;
+
+  const isEligible = nonGiftItemCount > 0;
+  const cartHasItems = (cart?.lines?.nodes?.length ?? 0) > 0;
 
   return (
     <div className={className}>
@@ -66,7 +86,10 @@ export function CartMain({layout, cart: originalCart, freeGift}: CartMainProps) 
         <div>
           <ul aria-labelledby="cart-lines">
             {(cart?.lines?.nodes ?? []).map((line) => {
-              if ('parentRelationship' in line && line.parentRelationship?.parent) {
+              if (
+                'parentRelationship' in line &&
+                line.parentRelationship?.parent
+              ) {
                 return null;
               }
               return (
@@ -81,8 +104,19 @@ export function CartMain({layout, cart: originalCart, freeGift}: CartMainProps) 
           </ul>
         </div>
 
-        {/* Free gift promo */}
-        {cartHasItems && freeGift && freeGiftAvailable && !freeGiftAlreadyInCart && (
+        {/* Auto-remove free gift if no longer eligible */}
+        {freeGiftLineId && !isEligible && (
+          <CartForm
+            route="/cart"
+            action={CartForm.ACTIONS.LinesRemove}
+            inputs={{lineIds: [freeGiftLineId]}}
+          >
+            <AutoSubmitForm />
+          </CartForm>
+        )}
+
+        {/* Free gift promo — show only when eligible and not already in cart */}
+        {isEligible && freeGift && freeGiftAvailable && !freeGiftAlreadyInCart && (
           <div className="free-gift-box">
             <p className="free-gift-label">ELIGIBLE</p>
             <div className="free-gift-inner">
@@ -128,9 +162,7 @@ function CartEmpty({
   return (
     <div hidden={hidden}>
       <br />
-      <p>
-      Empty. That's embarrassing.
-      </p>
+      <p>Empty. That's embarrassing.</p>
       <br />
       <Link to="/collections/all" onClick={close} prefetch="viewport">
         Go fix that →

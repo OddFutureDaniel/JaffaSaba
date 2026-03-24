@@ -1,6 +1,5 @@
-import {useLoaderData} from 'react-router';
-import type {Route} from './+types/products.$handle';
-import type {LinksFunction} from 'react-router';
+import { useLoaderData } from 'react-router';
+import type { Route } from './+types/products.$handle';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -9,57 +8,50 @@ import {
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
-import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
-import {ProductForm} from '~/components/ProductForm';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {StoreLayout} from '~/components/StoreLayout';
-import productStyles from '~/styles/product.css?url';
-import collectionStyles from '~/styles/collection.css?url';
-import {useState, useRef} from 'react';
+import { ProductPrice } from '~/components/ProductPrice';
+import { ProductImage } from '~/components/ProductImage';
+import { ProductForm } from '~/components/ProductForm';
+import { redirectIfHandleIsLocalized } from '~/lib/redirect';
+import { StoreLayout } from '~/components/StoreLayout';
+import { useState, useRef } from 'react';
 
-export const links: LinksFunction = () => [
-  {rel: 'stylesheet', href: collectionStyles},
-  {rel: 'stylesheet', href: productStyles},
-];
-
-export const meta: Route.MetaFunction = ({data}) => {
+export const meta: Route.MetaFunction = ({ data }) => {
   return [
-    {title: `Jaffa Saba | ${data?.product.title ?? ''}`},
-    {rel: 'canonical', href: `/products/${data?.product.handle}`},
+    { title: `Jaffa Saba | ${data?.product.title ?? ''}` },
+    { rel: 'canonical', href: `/products/${data?.product.handle}` },
   ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  return {...deferredData, ...criticalData};
+  return { ...deferredData, ...criticalData };
 }
 
-async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
-  const {handle} = params;
-  const {storefront} = context;
+async function loadCriticalData({ context, params, request }: Route.LoaderArgs) {
+  const { handle } = params;
+  const { storefront } = context;
 
   if (!handle) throw new Error('Expected product handle to be defined');
 
-  const [{product}] = await Promise.all([
+  const [{ product }] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
-      variables: {handle, selectedOptions: getSelectedProductOptions(request)},
+      variables: { handle, selectedOptions: getSelectedProductOptions(request) },
     }),
   ]);
 
-  if (!product?.id) throw new Response(null, {status: 404});
+  if (!product?.id) throw new Response(null, { status: 404 });
 
-  redirectIfHandleIsLocalized(request, {handle, data: product});
+  redirectIfHandleIsLocalized(request, { handle, data: product });
 
-  return {product};
+  return { product };
 }
 
-function loadDeferredData({context, params}: Route.LoaderArgs) {
+function loadDeferredData({ context, params }: Route.LoaderArgs) {
   return {};
 }
 
-function Lightbox({src, onClose}: {src: string; onClose: () => void}) {
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div className="lightbox-overlay" onClick={onClose}>
       <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
@@ -70,7 +62,7 @@ function Lightbox({src, onClose}: {src: string; onClose: () => void}) {
   );
 }
 
-function ImageCarousel({images}: {images: any[]}) {
+function ImageCarousel({ images }: { images: any[] }) {
   const [current, setCurrent] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -97,14 +89,15 @@ function ImageCarousel({images}: {images: any[]}) {
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     setIsDragging(false);
     setDragOffset(0);
-
     if (Math.abs(diff) > 40) {
       diff > 0 ? next() : prev();
     }
     touchStartX.current = null;
   };
 
-  const translateX = -(current * 100) + (dragOffset / (trackRef.current?.offsetWidth ?? 1)) * 100;
+  const translateX =
+    -(current * 100) +
+    (dragOffset / (trackRef.current?.offsetWidth ?? 1)) * 100;
 
   return (
     <>
@@ -121,19 +114,26 @@ function ImageCarousel({images}: {images: any[]}) {
             display: 'flex',
             width: `${images.length * 100}%`,
             transform: `translateX(${translateX / images.length}%)`,
-            transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            transition: isDragging
+              ? 'none'
+              : 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             willChange: 'transform',
           }}
         >
           {images.map((img: any, i: number) => (
             <div
               key={i}
-              style={{width: `${100 / images.length}%`, flexShrink: 0}}
+              style={{ width: `${100 / images.length}%`, flexShrink: 0 }}
             >
               <img
                 src={img.url}
                 alt={img.altText ?? ''}
-                style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
               />
             </div>
           ))}
@@ -155,7 +155,7 @@ function ImageCarousel({images}: {images: any[]}) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const { product } = useLoaderData<typeof loader>();
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const selectedVariant = useOptimisticVariant(
@@ -170,8 +170,9 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const { title, descriptionHtml } = product;
   const images = product.images?.nodes ?? [];
+  const auctionUrl = product.metafield?.value ?? null;
 
   return (
     <StoreLayout mainColumns="4 / 12">
@@ -191,18 +192,37 @@ export default function Product() {
 
         <div className="product-main">
           <div className="product-title">{title}</div>
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
+          {product.guidePrice?.value ? (
+            <p className="product-guide-price">
+              Guide Price: {product.guidePrice.value}
+            </p>
+          ) : (
+            <ProductPrice
+              price={selectedVariant?.price}
+              compareAtPrice={selectedVariant?.compareAtPrice}
+            />
+          )}
           <div
             className="description"
-            dangerouslySetInnerHTML={{__html: descriptionHtml}}
+            dangerouslySetInnerHTML={{ __html: descriptionHtml }}
           />
-          <ProductForm
-            productOptions={productOptions}
-            selectedVariant={selectedVariant}
-          />
+
+          {auctionUrl ? (
+            <a
+              href={auctionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="auction-btn"
+            >
+              View Auction Listing
+            </a>
+          ) : (
+            <ProductForm
+              productOptions={productOptions}
+              selectedVariant={selectedVariant}
+            />
+          )}
+
           <div className="product-info-section">
             <button
               className="product-info-link"
@@ -223,7 +243,9 @@ export default function Product() {
           </div>
         </div>
 
-        {lightbox && <Lightbox src={lightbox} onClose={() => setLightbox(null)} />}
+        {lightbox && (
+          <Lightbox src={lightbox} onClose={() => setLightbox(null)} />
+        )}
 
         <Analytics.ProductView
           data={{
@@ -290,6 +312,12 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    metafield(namespace: "custom", key: "auction_url") {
+      value
+    }
+    guidePrice: metafield(namespace: "custom", key: "guide_price") {
+      value
+    }
     images(first: 50) {
       nodes {
         __typename

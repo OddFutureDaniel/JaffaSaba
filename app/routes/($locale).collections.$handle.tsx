@@ -1,89 +1,141 @@
-import {redirect, useLoaderData} from 'react-router';
+import {useLoaderData, redirect} from 'react-router';
 import type {Route} from './+types/collections.$handle';
-import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {getPaginationVariables, Analytics, Money} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
-import {ProductItem} from '~/components/ProductItem';
-import type {ProductItemFragment} from 'storefrontapi.generated';
+import {StoreLayout} from '~/components/StoreLayout';
+import {Link} from 'react-router';
+import {useEffect, useRef} from 'react';
+import gsap from 'gsap';
+
 
 export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [{title: `Jaffa Saba | ${data?.collection.title ?? ''}`}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- */
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
-  });
+  const paginationVariables = getPaginationVariables(request, {pageBy: 20});
 
-  if (!handle) {
-    throw redirect('/collections');
-  }
+  if (!handle) throw redirect('/collections');
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
     }),
   ]);
 
   if (!collection) {
-    throw new Response(`Collection ${handle} not found`, {
-      status: 404,
-    });
+    throw new Response(`Collection ${handle} not found`, {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: collection});
 
-  return {
-    collection,
-  };
+  return {collection};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- */
 function loadDeferredData({context}: Route.LoaderArgs) {
   return {};
 }
 
+type ProductNode = {
+  id: string;
+  handle: string;
+  title: string;
+  featuredImage: {
+    id: string;
+    altText: string | null;
+    url: string;
+    width: number;
+    height: number;
+  } | null;
+  images: {
+    nodes: {
+      id: string;
+      url: string;
+      altText: string | null;
+      width: number;
+      height: number;
+    }[];
+  };
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+    maxVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+};
+
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
+  const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    cardRefs.current.forEach((card) => {
+      if (!card) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            gsap.to(card, {opacity: 1, y: 0, duration: 0.6, ease: 'power2.out'});
+            observer.disconnect();
+          }
+        },
+        {threshold: 0.1},
+      );
+      observer.observe(card);
+      observers.push(observer);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, [collection.products.nodes]);
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection<ProductItemFragment>
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
+    <StoreLayout mainColumns="4 / 11">
+      <div className="product-grid">
+        {collection.products.nodes.map((product: ProductNode, i: number) => (
+          <Link
             key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+            to={`/products/${product.handle}`}
+            className={`product-card${product.images?.nodes?.[1] ? ' has-secondary' : ''}`}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+          >
+            <div className="product-card-image">
+              {product.featuredImage && (
+                <img
+                  className="product-img-primary"
+                  src={product.featuredImage.url}
+                  alt={product.featuredImage.altText ?? product.title}
+                />
+              )}
+              {product.images?.nodes?.[1] && (
+                <img
+                  className="product-img-secondary"
+                  src={product.images.nodes[1].url}
+                  alt={product.images.nodes[1].altText ?? product.title}
+                />
+              )}
+            </div>
+            <div className="product-card-details">
+              <span className="product-card-title">{product.title}</span>
+              <span className="product-card-price">
+                <Money data={product.priceRange.minVariantPrice} />
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
       <Analytics.CollectionView
         data={{
           collection: {
@@ -92,7 +144,7 @@ export default function Collection() {
           },
         }}
       />
-    </div>
+    </StoreLayout>
   );
 }
 
@@ -112,6 +164,15 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       width
       height
     }
+    images(first: 2) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
     priceRange {
       minVariantPrice {
         ...MoneyProductItem
@@ -123,7 +184,6 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
   query Collection(

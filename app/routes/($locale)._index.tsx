@@ -2,7 +2,6 @@ import { Link, useLoaderData } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 import type { Route } from './+types/_index';
 import gsap from 'gsap';
-import '~/styles/homepage.css';
 
 export const meta: Route.MetaFunction = () => {
   return [{ title: 'Jaffa Saba' }];
@@ -12,15 +11,11 @@ export async function loader(args: Route.LoaderArgs) {
   const { context, request } = args;
   const { storefront } = context;
   const { collection } = await storefront.query(SHOWCASE_QUERY);
-
   const cookieHeader = request.headers.get('Cookie') ?? '';
   const isMobile = cookieHeader.includes('viewport=mobile');
-
   return {
     isMobile,
-    showcaseImages: collection?.products.nodes.map(
-      (p: any) => p.featuredImage
-    ) ?? [],
+    showcaseImages: collection?.products.nodes.map((p: any) => p.featuredImage) ?? [],
   };
 }
 
@@ -29,12 +24,7 @@ const SHOWCASE_QUERY = `#graphql
     collection(handle: "homepage-showcase") {
       products(first: 15) {
         nodes {
-          featuredImage {
-            url
-            altText
-            width
-            height
-          }
+          featuredImage { url altText width height }
         }
       }
     }
@@ -44,53 +34,34 @@ const SHOWCASE_QUERY = `#graphql
 const IMG_W = 19;
 const IMG_H = 28;
 
-const getBestPosition = (placed: { top: number; left: number; w: number; h: number }[]) => {
-  const candidates = 40;
-  let bestPos = { top: 10, left: 10, w: IMG_W, h: IMG_H };
-  let bestScore = -Infinity;
+function getPosition(activePos: Map<number, { top: number; left: number }>) {
+  const maxAttempts = 40;
 
-  for (let attempt = 0; attempt < candidates; attempt++) {
+  for (let i = 0; i < maxAttempts; i++) {
     const top = 10 + Math.random() * 50;
-    const left = 5 + Math.random() * 70;
+    const left = 5 + Math.random() * 65;
 
-    const overlapping = placed.some(p => {
-      const overlapX = Math.max(0, Math.min(left + IMG_W, p.left + p.w) - Math.max(left, p.left));
-      const overlapY = Math.max(0, Math.min(top + IMG_H, p.top + p.h) - Math.max(top, p.top));
-      const overlapArea = overlapX * overlapY;
-      return overlapArea / (IMG_W * IMG_H) > 0.1;
+    const overlapping = Array.from(activePos.values()).some(p => {
+      const overlapX = Math.max(0, Math.min(left + IMG_W, p.left + IMG_W) - Math.max(left, p.left));
+      const overlapY = Math.max(0, Math.min(top + IMG_H, p.top + IMG_H) - Math.max(top, p.top));
+      return (overlapX * overlapY) / (IMG_W * IMG_H) > 0.15;
     });
 
-    if (overlapping) continue;
-
-    const score = placed.length === 0
-      ? Math.random() * 100
-      : placed.reduce((acc, p) => {
-        const cx = left + IMG_W / 2;
-        const cy = top + IMG_H / 2;
-        const pcx = p.left + p.w / 2;
-        const pcy = p.top + p.h / 2;
-        return acc + Math.sqrt(Math.pow(cx - pcx, 2) + Math.pow(cy - pcy, 2));
-      }, 0);
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestPos = { top, left, w: IMG_W, h: IMG_H };
-    }
+    if (!overlapping) return { top, left };
   }
 
-  return bestPos;
-};
+  // fallback if no clean position found
+  return {
+    top: 10 + Math.random() * 50,
+    left: 5 + Math.random() * 65,
+  };
+}
 
 export default function Homepage() {
-
   const { showcaseImages, isMobile: serverIsMobile } = useLoaderData<typeof loader>();
-  const heroRef = useRef<HTMLElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLDivElement[]>([]);
-  const activePositions = useRef<Map<number, { top: number; left: number; w: number; h: number }>>(new Map());
-  const queueRef = useRef<number[]>([]);
-  const schedulerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  const activePositions = useRef<Map<number, { top: number; left: number }>>(new Map());
   const [isMobile, setIsMobile] = useState<boolean>(serverIsMobile);
 
   useEffect(() => {
@@ -101,77 +72,59 @@ export default function Homepage() {
   }, []);
 
   useEffect(() => {
-    if (showcaseImages.length === 0) return;
-    if (isMobile) return;
+    if (showcaseImages.length === 0 || isMobile) return;
 
-    const totalImages = imagesRef.current.length;
-    const visibleDuration = 4000;
-    const fadeIn = 2;
-    const fadeOut = 2;
-    const interval = 1500;
+    const imgs = imagesRef.current.filter(Boolean);
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    const buildQueue = () => {
-      const q = Array.from({ length: totalImages }, (_, i) => i);
-      for (let i = q.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [q[i], q[j]] = [q[j], q[i]];
-      }
-      return q;
-    };
+    // Set all images to initial hidden state
+    imgs.forEach((img) => {
+      gsap.set(img, { opacity: 0 });
+    });
 
-    queueRef.current = buildQueue();
-
-    const showNext = () => {
-      if (queueRef.current.length === 0) {
-        queueRef.current = buildQueue();
-      }
-
-      const i = queueRef.current.shift()!;
-      const img = imagesRef.current[i];
+    const loop = (index: number) => () => {
+      const img = imgs[index];
       if (!img) return;
 
-      const placed = Array.from(activePositions.current.values());
-      const pos = getBestPosition(placed);
+      const { top, left } = getPosition(activePositions.current);
+      activePositions.current.set(index, { top, left });
 
-      activePositions.current.set(i, pos);
-      gsap.set(img, { top: `${pos.top}%`, left: `${pos.left}%`, opacity: 0 });
+      gsap.set(img, { top: `${top}%`, left: `${left}%`, opacity: 0 });
 
       gsap.timeline()
-        .to(img, { opacity: 1, duration: fadeIn, ease: 'power2.inOut' })
-        .to(img, { opacity: 0, duration: fadeOut, ease: 'power2.inOut', delay: visibleDuration / 1000 })
-        .call(() => activePositions.current.delete(i));
-
-      schedulerRef.current = setTimeout(showNext, interval);
+        .to(img, { opacity: 1, duration: 2, ease: 'power2.inOut' })
+        .to(img, { opacity: 0, duration: 2, ease: 'power2.inOut', delay: 2 })
+        .call(() => {
+          activePositions.current.delete(index);
+          const t = setTimeout(loop(index), 3000 + Math.random() * 8000);
+          timers.push(t);
+        });
     };
 
-    showNext();
+    imgs.forEach((_, i) => {
+      const t = setTimeout(loop(i), i * 1800);
+      timers.push(t);
+    });
 
     const maxScroll = 900;
     const handleScroll = () => {
       const progress = Math.min(window.scrollY / maxScroll, 1);
-      gsap.to(ctaRef.current, {
-        opacity: progress,
-        duration: 0.3,
-        ease: 'power2.out',
-      });
+      gsap.to(ctaRef.current, { opacity: progress, duration: 0.3, ease: 'power2.out' });
     };
-
     window.addEventListener('scroll', handleScroll);
 
     return () => {
-      if (schedulerRef.current) clearTimeout(schedulerRef.current);
+      timers.forEach(clearTimeout);
       window.removeEventListener('scroll', handleScroll);
-      document.body.style.overflow = '';
       activePositions.current.clear();
-      gsap.killTweensOf(imagesRef.current);
+      gsap.killTweensOf(imgs);
     };
   }, [showcaseImages, isMobile]);
 
   return (
     <main className="homepage">
-      <section id="hero" ref={heroRef}>
+      <section id="hero">
 
-        {/* Show nothing until client has measured viewport */}
         {isMobile === null ? null : isMobile ? (
           <div id="mobile-hero">
             <img

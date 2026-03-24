@@ -1,17 +1,12 @@
 import type { Route } from './+types/collections.all';
-import type { LinksFunction } from 'react-router';
-import type { CollectionItemFragment } from 'storefrontapi.generated';
 import { useLoaderData } from 'react-router';
 import { getPaginationVariables, Money } from '@shopify/hydrogen';
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import gsap from 'gsap';
 import { StoreLayout } from '~/components/StoreLayout';
-import collectionStyles from '~/styles/collection.css?url';
 
-export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: collectionStyles },
-];
+
 
 export const meta: Route.MetaFunction = () => {
   return [{ title: 'Jaffa Saba | Store' }];
@@ -30,6 +25,40 @@ async function loadCriticalData({ context, request }: Route.LoaderArgs) {
   ]);
   return { products };
 }
+
+type ProductNode = {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  tags: string[];
+  featuredImage: {
+    id: string;
+    altText: string | null;
+    url: string;
+    width: number;
+    height: number;
+  } | null;
+  images: {
+    nodes: {
+      id: string;
+      url: string;
+      altText: string | null;
+      width: number;
+      height: number;
+    }[];
+  };
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+    maxVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+};
 
 export default function AllProducts() {
   const { products } = useLoaderData<typeof loader>();
@@ -57,18 +86,26 @@ export default function AllProducts() {
   return (
     <StoreLayout mainColumns="4 / 11">
       <div className="product-grid">
-        {products.nodes.map((product: CollectionItemFragment, i: number) => (
+        {products.nodes.map((product: ProductNode, i: number) => (
           <Link
-            key={product.id}
-            to={`/products/${product.handle}`}
-            className="product-card"
-            ref={(el) => { cardRefs.current[i] = el; }}
-          >
+          key={product.id}
+          to={`/products/${product.handle}`}
+          className={`product-card${product.images?.nodes?.[1] ? ' has-secondary' : ''}`}
+          ref={(el) => { cardRefs.current[i] = el; }}
+        >
             <div className="product-card-image">
               {product.featuredImage && (
                 <img
+                  className="product-img-primary"
                   src={product.featuredImage.url}
                   alt={product.featuredImage.altText ?? product.title}
+                />
+              )}
+              {product.images?.nodes?.[1] && (
+                <img
+                  className="product-img-secondary"
+                  src={product.images.nodes[1].url}
+                  alt={product.images.nodes[1].altText ?? product.title}
                 />
               )}
             </div>
@@ -102,6 +139,15 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
       url
       width
       height
+    }
+    images(first: 2) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
     }
     priceRange {
       minVariantPrice {

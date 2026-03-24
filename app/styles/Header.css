@@ -1,219 +1,264 @@
+/* --------------------------------------------------
+   Global header — fixed, split nav layout
+-------------------------------------------------- */
 #header {
-    position: fixed;
-    top: 20px;
-    left: 0;
-    width: 100%;
-    padding: 20px 40px;
-   z-index:199;
-  }
-  
-  #header-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 80%;
-    margin: 0 auto;
-    position: relative;
-  }
-  
-  .nav-left {
-    display: flex;
-    gap: 60px;
-    flex: 1;
-    align-items: center;
-  }
-  
-  .nav-right {
-    display: flex;
-    gap: 60px;
-    flex: 1;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  
-  /* Logo always absolutely centred */
-  .nav-logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  
- /* Logo image size */
+  position: fixed;
+  top: 32px;
+  left: 0;
+  width: 100%;
+  z-index: 199;
+  padding: 20px 24px 16px;
+}
+
+
+
+#header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.nav-left {
+  display: flex;
+  gap: 60px;
+  flex: 1;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  gap: 60px;
+  flex: 1;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.nav-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .nav-logo img {
-    width: auto !important;
-    height: 50px !important;
-    display: block;
+  width: auto;
+  height: 50px;
+  display: block;
+}
+
+#header-nav a {
+  font-family: 'Work Sans', sans-serif;
+  text-decoration: none;
+  color: #1a0a00;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+#header-nav a:hover {
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* --------------------------------------------------
+   Shared store header — logo left, icons right
+-------------------------------------------------- */
+.store-header {
+  grid-column: 2 / 12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.store-header-logo img {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+}
+
+.store-header-icons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-hamburger {
+  display: none;
+}
+
+/* --------------------------------------------------
+   Cart
+-------------------------------------------------- */
+.cart-toggle {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #1a0a00;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --------------------------------------------------
+   Mobile menu (global header)
+-------------------------------------------------- */
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  z-index: 198;
+  border-bottom: 1px solid #f0eeeb;
+}
+
+.mobile-menu a {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a0a00;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------------
+   Mobile menu (store layout)
+-------------------------------------------------- */
+.store-mobile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid #f0eeeb;
+  border-bottom: 1px solid #f0eeeb;
+}
+
+.store-mobile-menu a {
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1a0a00;
+  text-decoration: none;
+}
+
+/* --------------------------------------------------
+   Breakpoint — 1250px
+-------------------------------------------------- */
+@media (max-width: 1250px) {
+  #header-nav {
+    width: 85%;
   }
-  
-  /* Smaller logo on mobile */
-  @media (max-width: 750px) {
-    .nav-logo img {
-      height: 40px !important;
-    }
-  }
-  
-  /* Gap between nav items and logo at mid breakpoints */
-  @media (max-width: 1250px) {
-    .nav-left {
-      padding-right: 80px;
-    }
-  
-    .nav-right {
-      padding-left: 80px;
-    }
-  }
-  
-  #header-nav a {
-    text-decoration: none;
-    color: #1a0a00;
-    font-size: 14px;
-    letter-spacing: 0.05em;
-  }
-  
-  #header-nav a:hover {
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-  }
-  
-  .cart-toggle {
-    position: relative;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-  }
-  
-  .cart-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #1a0a00;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .hamburger {
+
+  .nav-contact {
     display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
   }
-  
-  /* Below 1250px — hide Contact */
-  @media (max-width: 1250px) {
-    .nav-contact {
-      display: none;
-    }
+
+  .nav-left {
+    padding-right: 80px;
   }
-  
-  /* Below 750px — hamburger mode */
-  @media (max-width: 750px) {
-    .hamburger {
-      display: flex;
-    }
-  
-    .nav-left {
-      display: none;
-    }
-  
-    .nav-right {
-      gap: 20px;
-    }
-  
-    /* Hide portfolio and contact in nav-right on mobile */
-    .nav-portfolio,
-    .nav-contact {
-      display: none;
-    }
-  
-    #header-nav {
-      width: 100%;
-    }
+
+  .nav-right {
+    padding-left: 80px;
   }
-  
-  .mobile-menu {
+}
+
+/* --------------------------------------------------
+   Breakpoint — 750px (mobile)
+-------------------------------------------------- */
+@media (max-width: 750px) {
+  #header {
+    padding: 16px 20px;
+    top: 0;
+  }
+
+  #header-nav {
+    width: 100%;
+  }
+
+  .nav-logo {
+    position: static;
+    transform: none;
+    flex: 1;
+  }
+
+  .nav-logo img {
+    height: 32px;
+    width: auto;
+  }
+
+  .nav-left {
+    display: none;
+  }
+
+  .nav-right {
+    flex: 0;
+    gap: 12px;
+    padding-left: 0;
+  }
+
+  .nav-portfolio,
+  .nav-contact {
+    display: none;
+  }
+
+  .hamburger {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px 40px;
-    background: white;
-  }
-  
-  .mobile-menu a {
-    text-decoration: none;
-    color: #1a0a00;
-    font-size: 14px;
-    letter-spacing: 0.05em;
   }
 
-  @media (max-width: 1250px) {
-    #header-nav {
-      width: 85%;
-    }
-  
-    .nav-contact {
-      display: none;
-    }
-  
-    .nav-left {
-      padding-right: 80px;
-    }
-  
-    .nav-right {
-      padding-left: 80px;
-    }
+  .store-header {
+    padding: 16px 20px;
+    grid-column: 1 / 13;
   }
 
-  @media (max-width: 750px) {
-    #header {
-      top: 0;
-      padding: 16px 20px;
-    }
-  
-    #header-nav {
-      width: 100%;
-      position: relative;
-    }
-  
-    /* Reset the absolute centred logo */
-    .nav-logo {
-      position: static;
-      transform: none;
-      flex: 1;
-    }
-  
-    .nav-logo img {
-      height: 40px !important;
-    }
-  
-    /* Hide desktop nav links */
-    .nav-left {
-      display: none;
-    }
-  
-    /* Right side — hamburger + cart only */
-    .nav-right {
-      flex: 0;
-      gap: 16px;
-      padding-left: 0;
-    }
-  
-    /* Hide portfolio and contact */
-    .nav-portfolio,
-    .nav-contact {
-      display: none;
-    }
-  
-    .hamburger {
-      display: flex;
-    }
+  .store-header-logo img {
+    height: 32px;
+    width: auto;
+    max-width: unset;
   }
+
+  .mobile-hamburger {
+    display: flex;
+  }
+
+  .store-header-icons {
+    gap: 12px;
+  }
+}
