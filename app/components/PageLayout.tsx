@@ -1,21 +1,21 @@
-import {Await, Link, useLocation} from 'react-router';
-import {Suspense, useId} from 'react';
+import { Await, Link, useLocation } from 'react-router';
+import { Suspense, useId } from 'react';
 import type {
   CartApiQueryFragment,
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
-import {Footer} from '~/components/Footer';
-import {Header, HeaderMenu} from '~/components/Header';
-import {CartMain} from '~/components/CartMain';
+import { Footer } from '~/components/Footer';
+import { Header, HeaderMenu } from '~/components/Header';
+import { CartMain } from '~/components/CartMain';
 import {
   SEARCH_ENDPOINT,
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
-import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
-import {StorePageProvider, useStorePageContext} from '~/components/StorePageContext';
-import {Search, X} from 'lucide-react';
-import {Aside, useAside} from '~/components/Aside';
+import { SearchResultsPredictive } from '~/components/SearchResultsPredictive';
+import { StorePageProvider, useStorePageContext } from '~/components/StorePageContext';
+import { Search, X } from 'lucide-react';
+import { Aside, useAside } from '~/components/Aside';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -26,8 +26,8 @@ interface PageLayoutProps {
   children?: React.ReactNode;
   freeGift?: {
     title: string;
-    featuredImage: {url: string; altText: string | null} | null;
-    variants: {nodes: {id: string; availableForSale: boolean}[]};
+    featuredImage: { url: string; altText: string | null } | null;
+    variants: { nodes: { id: string; availableForSale: boolean }[] };
   } | null;
 }
 
@@ -40,7 +40,7 @@ function PageLayoutInner({
   publicStoreDomain,
   freeGift,
 }: PageLayoutProps) {
-  const {hideGlobalLayout} = useStorePageContext();
+  const { hideGlobalLayout } = useStorePageContext();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
@@ -98,7 +98,7 @@ function CartAside({
 }
 
 function SearchOverlay() {
-  const {type, close} = useAside();
+  const { type, close } = useAside();
   const isOpen = type === 'search';
   const queriesDatalistId = 'predictive-search-queries';
 
@@ -107,20 +107,23 @@ function SearchOverlay() {
   return (
     <div className="search-overlay">
       <SearchFormPredictive>
-        {({fetchResults, inputRef}) => (
+        {({ fetchResults, inputRef }) => (
           <div className="search-overlay-inner">
             <Search size={18} strokeWidth={1.5} color="#1a0a00" />
             <input
-              ref={inputRef}
-              name="q"
-              onChange={fetchResults}
-              onFocus={fetchResults}
-              placeholder="Search"
-              type="search"
-              list={queriesDatalistId}
-              className="search-overlay-input"
-              autoFocus
-            />
+  ref={inputRef}
+  name="search-query"
+  onChange={fetchResults}
+  onFocus={fetchResults}
+  placeholder="Search"
+  type="text"
+  className="search-overlay-input"
+  autoFocus
+  autoComplete="off"
+  autoCorrect="off"
+  autoCapitalize="off"
+  spellCheck={false}
+/>
             <button className="search-overlay-close" onClick={close}>
               <X size={18} strokeWidth={1.5} color="#1a0a00" />
             </button>
@@ -128,30 +131,24 @@ function SearchOverlay() {
         )}
       </SearchFormPredictive>
       <div className="search-overlay-results">
-        <SearchResultsPredictive>
-          {({items, total, term, state, closeSearch}) => {
-            const {products, queries} = items;
-            if (state === 'loading' && term.current) {
-              return <div className="search-loading">Searching...</div>;
-            }
-            if (!total) {
-              return <SearchResultsPredictive.Empty term={term} />;
-            }
-            return (
-              <>
-                <SearchResultsPredictive.Queries
-                  queries={queries}
-                  queriesDatalistId={queriesDatalistId}
-                />
-                <SearchResultsPredictive.Products
-                  products={products}
-                  closeSearch={closeSearch}
-                  term={term}
-                />
-              </>
-            );
-          }}
-        </SearchResultsPredictive>
+      <SearchResultsPredictive>
+  {({items, total, term, state, closeSearch}) => {
+    const {products} = items;
+    if (state === 'loading' && term.current) {
+      return <div className="search-loading">Searching...</div>;
+    }
+    if (!total) {
+      return <SearchResultsPredictive.Empty term={term} />;
+    }
+    return (
+      <SearchResultsPredictive.Products
+        products={products}
+        closeSearch={closeSearch}
+        term={term}
+      />
+    );
+  }}
+</SearchResultsPredictive>
       </div>
     </div>
   );

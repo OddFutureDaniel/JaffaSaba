@@ -39,9 +39,19 @@ export function links() {
 }
 
 export async function loader(args: Route.LoaderArgs) {
+  const { request, context } = args;
+  const { env, storefront } = context;
+
+  const cookieHeader = request.headers.get('Cookie') ?? '';
+  const isAuthenticated = cookieHeader.includes('storefront_auth=true');
+  const url = new URL(request.url);
+
+  if (!isAuthenticated && url.pathname !== '/password') {
+    throw redirect('/password');
+  }
+
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
-  const {storefront, env} = args.context;
 
   return {
     ...deferredData,
@@ -55,8 +65,8 @@ export async function loader(args: Route.LoaderArgs) {
       checkoutDomain: env.PUBLIC_CHECKOUT_DOMAIN,
       storefrontAccessToken: env.PUBLIC_STOREFRONT_API_TOKEN,
       withPrivacyBanner: false,
-      country: args.context.storefront.i18n.country,
-      language: args.context.storefront.i18n.language,
+      country: context.storefront.i18n.country,
+      language: context.storefront.i18n.language,
     },
   };
 }
@@ -169,7 +179,7 @@ export default function App() {
       </PageLayout>
     </Analytics.Provider>
   );
-  
+
 }
 
 export function ErrorBoundary() {

@@ -645,39 +645,44 @@ button.reset:hover:not(:has(> *)) {
 
 .search-overlay {
   position: fixed;
-  top: 180px;
-  left: 80%;
-  transform: translateX(-50%);
+  top: 85px;
+  left: 60%;
+  right: 0;
+  width: 30%;
   background: white;
   z-index: 300;
-  border: 1px solid #e0ddd9;
-  width: 500px;
-  max-width: 90vw;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: none;
+  box-shadow: none;
+  transform: scale(0.75);
 }
 
 .search-overlay-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 48px;
-  padding: 0 16px;
+  gap: 8px;
+  height: 30px;
+  border: none;
 }
 
 .search-overlay-input {
   flex: 1;
   border: none;
+  border-bottom: 1px solid var(--text);
+  border-radius: 0px;
   outline: none;
   font-family: var(--font);
-  font-size: 14px;
   font-weight: 400;
-  color: var(--text);
+  color: black;
   background: transparent;
   letter-spacing: 0.02em;
+  padding: 0px 0;
+  font-size: 16px !important;
+
+  transform-origin: left center;
 }
 
 .search-overlay-input::placeholder {
-  color: #aaa;
+  color: black;
 }
 
 .search-overlay-input::-webkit-search-cancel-button {
@@ -695,15 +700,28 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .search-overlay-results {
-  padding: 8px 16px 16px;
-  max-height: 400px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  max-height: 60vh;
   overflow-y: auto;
-  border-top: 1px solid var(--border);
+  z-index: 301;
+}
+
+.search-overlay-results p {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.search-overlay-results small {
+  font-size: 10px;
 }
 
 .search-loading {
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 10px;
   color: var(--muted);
   padding: 8px 0;
 }
@@ -754,6 +772,26 @@ button.reset:hover:not(:has(> *)) {
   flex: row;
   align-items: center;
   gap: 1rem;
+}
+
+/* --------------------------------------------------
+       Search overlay breakpoints
+    -------------------------------------------------- */
+
+@media (max-width: 1200px) {
+  .search-overlay {
+    left: 40%;
+    width: 60%;
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 750px) {
+  .search-overlay {
+    left: 0;
+    width: 100%;
+    top: 60px;
+  }
 }
 
 /* ============================================================
@@ -964,8 +1002,13 @@ button.reset:hover:not(:has(> *)) {
   text-transform: uppercase;
   color: var(--text);
   text-decoration: none !important;
-  border-bottom: 1px solid var(--text);
+  /* border-bottom: 1px solid var(--text); */
   padding-bottom: 3px;
+}
+
+#shop-cta a:hover 
+{
+  border-bottom: 1px solid var(--text);
 }
 
 #mobile-hero {
@@ -1935,8 +1978,8 @@ button.reset:hover:not(:has(> *)) {
   width: 100%;
 }
 
- .store-spacer {
-  margin-left: calc(100vw / 12) ;
+.store-spacer {
+  margin-left: calc(100vw / 12);
 }
 
 .contact-input,
@@ -1952,71 +1995,151 @@ select {
    POLICY PAGES — terms, privacy
    ============================================================ */
 
-   .policy-page {
-    padding: 40px 0;
+.policy-page {
+  padding: 40px 0;
+}
+
+.policy-heading {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+
+.policy-updated {
+  font-family: var(--font);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 48px;
+}
+
+.policy-body {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.policy-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.policy-section-title {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.policy-section p {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.policy-section ul {
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  padding-left: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.policy-section a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ============================================================
+   PASSWORD PAGE
+   ============================================================ */
+
+   .password-page {
+    min-height: 100vh;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
-  .policy-heading {
+  .password-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    width: 100%;
+    max-width: 320px;
+    padding: 0 24px;
+  }
+  
+  .password-logo {
+    max-width: 200px;
+    height: auto;
+  }
+  
+  .password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .password-input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--text);
+    padding: 8px 0;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    background: transparent;
+    outline: none;
+    text-align: center;
+    letter-spacing: 0.1em;
+    border-radius: 0;
+  }
+  
+  .password-input::placeholder {
+    color: #aaa;
+    letter-spacing: 0.05em;
+  }
+  
+  .password-submit {
+    background: var(--text);
+    color: white;
+    border: none;
+    padding: 10px;
     font-family: var(--font);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--text);
-    margin: 0 0 8px;
+    cursor: pointer;
+    width: 100%;
   }
   
-  .policy-updated {
+  .password-submit:hover {
+    background: #000;
+  }
+  
+  .password-error {
     font-family: var(--font);
     font-size: 11px;
-    color: var(--muted);
-    margin: 0 0 48px;
-  }
-  
-  .policy-body {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-  
-  .policy-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .policy-section-title {
-    font-family: var(--font);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 0.05em;
+    color: #c00;
+    text-align: center;
     margin: 0;
-  }
-  
-  .policy-section p {
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--text);
-    line-height: 1.7;
-    margin: 0;
-  }
-  
-  .policy-section ul {
-    font-family: var(--font);
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.7;
-    padding-left: 20px;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .policy-section a {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
   }
