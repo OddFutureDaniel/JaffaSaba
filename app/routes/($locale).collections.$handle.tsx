@@ -129,9 +129,7 @@ export default function Collection() {
             </div>
             <div className="product-card-details">
               <span className="product-card-title">{product.title}</span>
-              <span className="product-card-price">
-                <Money data={product.priceRange.minVariantPrice} />
-              </span>
+              
             </div>
           </Link>
         ))}
