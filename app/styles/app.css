@@ -939,7 +939,7 @@ button.reset:hover:not(:has(> *)) {
   max-width: 160px;
   height: auto;
   opacity: 0.85;
-  transition: transform 1.2s ease;
+
 }
 
 /* ============================================================

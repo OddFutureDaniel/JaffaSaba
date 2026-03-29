@@ -21,7 +21,7 @@ function RotatingLogo() {
 
     const animate = () => {
       if (isHovering.current) {
-        rotationRef.current = (rotationRef.current + 0.9) % 360;
+        rotationRef.current = (rotationRef.current + 1.5) % 360;
         img.style.transform = `rotate(${rotationRef.current}deg)`;
       }
       animFrameRef.current = requestAnimationFrame(animate);
@@ -35,16 +35,14 @@ function RotatingLogo() {
   }, []);
 
   return (
-    
-      <img
-        ref={imgRef}
-        src="/JaffaLogo.png"
-        alt="Jaffa Saba"
-        className="footer-logo"
-        onMouseEnter={() => { isHovering.current = true; }}
-        onMouseLeave={() => { isHovering.current = false; }}
-      />
-   
+    <img
+      ref={imgRef}
+      src="/JaffaLogo.png"
+      alt="Jaffa Saba"
+      className="footer-logo"
+      onMouseEnter={() => { isHovering.current = true; }}
+      onMouseLeave={() => { isHovering.current = false; }}
+    />
   );
 }
 
