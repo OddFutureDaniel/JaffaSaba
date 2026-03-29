@@ -94,22 +94,22 @@ export function Footer({ footer: footerPromise }: FooterProps) {
                 <p className="footer-heading">HELP</p>
                 <nav className="footer-nav">
                   <Link to="/pages/size-guide">Sizing</Link>
-                  <Link to="/policies/shipping-policy">Deliveries</Link>
-                  <Link to="/pages/contact">Talk To Us</Link>
+                  <Link to="/policies/shipping-policy">Shipping</Link>
+                  <Link to="/pages/contact">Contact</Link>
                 </nav>
               </div>
 
               {/* Middle — Engage */}
               <div className="footer-section footer-section-center">
-                <p className="footer-heading">ACCESS</p>
-                <p>Dont sleep. First to know.</p>
+  
+                
                 <form
                   className="footer-newsletter"
                   onSubmit={(e) => e.preventDefault()}
                 >
                   <input
                     type="email"
-                    placeholder="Your email"
+                    placeholder="email"
                     className="footer-email-input"
                     required
                   />
