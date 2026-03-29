@@ -6,7 +6,7 @@ import { Link } from 'react-router';
 import gsap from 'gsap';
 import { StoreLayout } from '~/components/StoreLayout';
 
-
+const HIDDEN_PRODUCT_HANDLES = ['sample-gene-2023-dog-tags'];
 
 export const meta: Route.MetaFunction = () => {
   return [{ title: 'Jaffa Saba | Store' }];
@@ -64,6 +64,10 @@ export default function AllProducts() {
   const { products } = useLoaderData<typeof loader>();
   const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
+  const visibleProducts = products.nodes.filter(
+    (product: ProductNode) => !HIDDEN_PRODUCT_HANDLES.includes(product.handle)
+  );
+
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     cardRefs.current.forEach((card) => {
@@ -81,18 +85,18 @@ export default function AllProducts() {
       observers.push(observer);
     });
     return () => observers.forEach(o => o.disconnect());
-  }, [products.nodes]);
+  }, [visibleProducts]);
 
   return (
     <StoreLayout mainColumns="4 / 11">
       <div className="product-grid">
-        {products.nodes.map((product: ProductNode, i: number) => (
+        {visibleProducts.map((product: ProductNode, i: number) => (
           <Link
-          key={product.id}
-          to={`/products/${product.handle}`}
-          className={`product-card${product.images?.nodes?.[1] ? ' has-secondary' : ''}`}
-          ref={(el) => { cardRefs.current[i] = el; }}
-        >
+            key={product.id}
+            to={`/products/${product.handle}`}
+            className={`product-card${product.images?.nodes?.[1] ? ' has-secondary' : ''}`}
+            ref={(el) => { cardRefs.current[i] = el; }}
+          >
             <div className="product-card-image">
               {product.featuredImage && (
                 <img
