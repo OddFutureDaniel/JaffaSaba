@@ -43,6 +43,11 @@ function PageLayoutInner({
   const { hideGlobalLayout } = useStorePageContext();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isPasswordPage = location.pathname === '/password';
+
+  if (isPasswordPage) {
+    return <main className="realmain">{children}</main>;
+  }
 
   return (
     <Aside.Provider>

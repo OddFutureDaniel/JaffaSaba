@@ -6,6 +6,7 @@ const STORE_LAYOUT_ROUTES = [
   '/collections/',
   '/products/',
   '/pages/',
+  '/password',
 ];
 
 interface StorePageContextType {
