@@ -41,21 +41,23 @@ export async function createHydrogenRouterContext(
     AppSession.init(request, [env.SESSION_SECRET]),
   ]);
 
-  const hydrogenContext = createHydrogenContext(
-    {
-      env,
-      request,
-      cache,
-      waitUntil,
-      session,
-      // Or detect from URL path based on locale subpath, cookies, or any other strategy
-      i18n: getLocaleFromRequest(request),
-      cart: {
-        queryFragment: CART_QUERY_FRAGMENT,
-      },
+  const locale = getLocaleFromRequest(request);
+
+const hydrogenContext = createHydrogenContext(
+  {
+    env,
+    request,
+    cache,
+    waitUntil,
+    session,
+    i18n: locale,
+    cart: {
+      queryFragment: CART_QUERY_FRAGMENT,
+      countryCode: locale.country,
     },
-    additionalContext,
-  );
+  },
+  additionalContext,
+);
 
   return hydrogenContext;
 }
