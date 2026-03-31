@@ -66,7 +66,7 @@ export default function Contact() {
       <StoreLayout id="contact-page">
         <div className="contact-page">
           <p className="contact-heading">Message Sent</p>
-          <p className="contact-success">Thanks for getting in touch — we'll be in touch shortly.</p>
+          <p className="contact-success">Message Sent</p>
         </div>
       </StoreLayout>
     );
@@ -80,10 +80,10 @@ export default function Contact() {
 
           <div className="contact-row">
             <div className="contact-field">
-              <label className="contact-label">First name <span className="contact-required">*</span></label>
+              <label className="contact-label">First <span className="contact-required">*</span></label>
               <input
                 type="text"
-                placeholder="first"
+                placeholder=""
                 className={`contact-input${errors.first ? ' contact-input--error' : ''}`}
                 value={values.first}
                 onChange={e => handleChange('first', e.target.value)}
@@ -91,10 +91,10 @@ export default function Contact() {
               {errors.first && <span className="contact-error">{errors.first}</span>}
             </div>
             <div className="contact-field">
-              <label className="contact-label">Last name <span className="contact-required">*</span></label>
+              <label className="contact-label">Last <span className="contact-required">*</span></label>
               <input
                 type="text"
-                placeholder="last"
+                placeholder=""
                 className={`contact-input${errors.last ? ' contact-input--error' : ''}`}
                 value={values.last}
                 onChange={e => handleChange('last', e.target.value)}
@@ -108,7 +108,7 @@ export default function Contact() {
               <label className="contact-label">Email <span className="contact-required">*</span></label>
               <input
                 type="email"
-                placeholder="email"
+                placeholder=""
                 className={`contact-input${errors.email ? ' contact-input--error' : ''}`}
                 value={values.email}
                 onChange={e => handleChange('email', e.target.value)}
@@ -119,7 +119,7 @@ export default function Contact() {
               <label className="contact-label">Order number</label>
               <input
                 type="text"
-                placeholder="order number"
+                placeholder=""
                 className="contact-input"
                 value={values.orderNumber}
                 onChange={e => handleChange('orderNumber', e.target.value)}
@@ -130,7 +130,7 @@ export default function Contact() {
           <div className="contact-field">
             <label className="contact-label">Message <span className="contact-required">*</span></label>
             <textarea
-              placeholder="message"
+              placeholder=""
               className={`contact-textarea${errors.message ? ' contact-input--error' : ''}`}
               rows={8}
               value={values.message}

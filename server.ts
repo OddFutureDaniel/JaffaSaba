@@ -1,10 +1,7 @@
 import * as serverBuild from 'virtual:react-router/server-build';
-import {createRequestHandler, storefrontRedirect} from '@shopify/hydrogen';
+import {createRequestHandler, storefrontRedirect, createContentSecurityPolicy} from '@shopify/hydrogen';
 import {createHydrogenRouterContext} from '~/lib/context';
 
-/**
- * Export a fetch handler in module format.
- */
 export default {
   async fetch(
     request: Request,
@@ -18,17 +15,29 @@ export default {
         executionContext,
       );
 
-      /**
-       * Create a Hydrogen request handler that internally
-       * delegates to React Router for routing and rendering.
-       */
+      const {header, nonce} = createContentSecurityPolicy({
+        connectSrc: [
+          "'self'",
+          'https://cdn.shopify.com/',
+          'https://monorail-edge.shopifysvc.com',
+          `https://${env.PUBLIC_STORE_DOMAIN}`,
+          'https://formspree.io',
+          'http://localhost:*',
+          'ws://localhost:*',
+          'ws://127.0.0.1:*',
+          'ws://*.tryhydrogen.dev:*',
+        ],
+      });
+      
       const handleRequest = createRequestHandler({
         build: serverBuild,
         mode: process.env.NODE_ENV,
+        nonce,
         getLoadContext: () => hydrogenContext,
       });
-
+      
       const response = await handleRequest(request);
+      response.headers.set('Content-Security-Policy', header);
 
       if (hydrogenContext.session.isPending) {
         response.headers.set(
@@ -38,11 +47,6 @@ export default {
       }
 
       if (response.status === 404) {
-        /**
-         * Check for redirects only when there's a 404 from the app.
-         * If the redirect doesn't exist, then `storefrontRedirect`
-         * will pass through the 404 response.
-         */
         return storefrontRedirect({
           request,
           response,

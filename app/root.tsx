@@ -142,16 +142,18 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <link rel="stylesheet" href={appStyles} />
         <Meta />
         <Links />
-        {/* Set viewport cookie before React hydrates to prevent mobile/desktop flash */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            if (window.innerWidth <= 750) {
-              document.cookie = 'viewport=mobile; path=/; max-age=3600';
-            } else {
-              document.cookie = 'viewport=desktop; path=/; max-age=3600';
-            }
-          `
-        }} />
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (window.innerWidth <= 750) {
+                document.cookie = 'viewport=mobile; path=/; max-age=3600';
+              } else {
+                document.cookie = 'viewport=desktop; path=/; max-age=3600';
+              }
+            `
+          }}
+        />
       </head>
       <body>
         {children}
