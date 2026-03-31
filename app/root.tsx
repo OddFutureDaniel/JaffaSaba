@@ -1,4 +1,4 @@
-import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import { Analytics, getShopAnalytics, useNonce } from '@shopify/hydrogen';
 import {
   Outlet,
   useRouteError,
@@ -11,13 +11,13 @@ import {
   useRouteLoaderData,
   redirect,
 } from 'react-router';
-import type {Route} from './+types/root';
+import type { Route } from './+types/root';
 import favicon from '~/assets/favicon.svg';
-import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import { FOOTER_QUERY, HEADER_QUERY } from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
-import {PageLayout} from './components/PageLayout';
+import { PageLayout } from './components/PageLayout';
 
 export type RootLoader = typeof loader;
 
@@ -33,9 +33,9 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 export function links() {
   return [
-    {rel: 'preconnect', href: 'https://cdn.shopify.com'},
-    {rel: 'preconnect', href: 'https://shop.app'},
-    {rel: 'icon', type: 'image/svg+xml', href: favicon},
+    { rel: 'preconnect', href: 'https://cdn.shopify.com' },
+    { rel: 'preconnect', href: 'https://shop.app' },
+    { rel: 'icon', type: 'image/svg+xml', href: favicon },
   ];
 }
 
@@ -72,13 +72,13 @@ export async function loader(args: Route.LoaderArgs) {
   };
 }
 
-async function loadCriticalData({context}: Route.LoaderArgs) {
-  const {storefront} = context;
+async function loadCriticalData({ context }: Route.LoaderArgs) {
+  const { storefront } = context;
 
   const [header, freeGift] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
-      variables: {headerMenuHandle: 'main-menu'},
+      variables: { headerMenuHandle: 'main-menu' },
     }),
     storefront.query(FREE_GIFT_QUERY, {
       cache: storefront.CacheShort(),
@@ -109,8 +109,8 @@ const FREE_GIFT_QUERY = `#graphql
   }
 ` as const;
 
-function loadDeferredData({context}: Route.LoaderArgs) {
-  const {storefront, customerAccount, cart} = context;
+function loadDeferredData({ context }: Route.LoaderArgs) {
+  const { storefront, customerAccount, cart } = context;
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
@@ -129,7 +129,7 @@ function loadDeferredData({context}: Route.LoaderArgs) {
   };
 }
 
-export function Layout({children}: {children?: React.ReactNode}) {
+export function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
 
   return (
@@ -143,15 +143,14 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <Meta />
         <Links />
         <script
-          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
-              if (window.innerWidth <= 750) {
-                document.cookie = 'viewport=mobile; path=/; max-age=3600';
-              } else {
-                document.cookie = 'viewport=desktop; path=/; max-age=3600';
-              }
-            `
+      if (window.innerWidth <= 750) {
+        document.cookie = 'viewport=mobile; path=/; max-age=3600';
+      } else {
+        document.cookie = 'viewport=desktop; path=/; max-age=3600';
+      }
+    `
           }}
         />
       </head>
