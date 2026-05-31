@@ -2296,65 +2296,171 @@ select {
     display: block;
   }
   
-  .portfolio-lightbox-overlay {
+  /* Lightbox */
+  .plb-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.92);
     z-index: 500;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    outline: none;
   }
   
-  .portfolio-lightbox {
-    position: relative;
+  .plb-inner {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    max-width: 80vw;
-    max-height: 90vh;
+    width: 100%;
+    height: 100%;
+    position: relative;
   }
   
-  .portfolio-lightbox img {
-    max-width: 100%;
-    max-height: 75vh;
-    object-fit: contain;
-    display: block;
-  }
-  
-  .portfolio-lightbox-close {
+  .plb-info {
     position: absolute;
-    top: -40px;
-    right: 0;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 0;
+    left: 200px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 220px;
+    z-index: 10;
   }
   
-  .portfolio-lightbox-title {
+  .plb-title {
     font-family: var(--font);
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 22px;
+    font-weight: 400;
     color: white;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+  
+  .plb-bio {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.7;
+    margin: 0;
+  }
+  
+  .plb-count {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     margin: 0;
   }
   
-  .portfolio-lightbox-category {
-    font-family: var(--font);
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin: 0;
+  .plb-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 48px 160px;
   }
   
+  .plb-img {
+    max-width: 50vw;
+    max-height: 80vh;
+    object-fit: contain;
+    display: block;
+    border-radius: 0;
+  }
+  
+  .plb-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+  }
+  
+  .plb-strip-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.4);
+  }
+  
+  .plb-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    padding-right: 24px;
+  }
+  
+  .plb-strip::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .plb-thumb {
+    flex-shrink: 0;
+    width: 90px;
+    height: 90px;
+    padding: 0;
+    border: 2px solid transparent;
+    background: none;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .plb-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+  }
+  
+  .plb-thumb--active {
+    opacity: 1;
+    border-color: white;
+  }
+  
+  .plb-thumb:hover {
+    opacity: 0.8;
+  }
+  
+  .plb-arrows {
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  
+  .plb-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+  }
+  
+  .plb-arrow:hover {
+    opacity: 1;
+  }
+  
+  /* Footer */
   .portfolio-footer {
     position: fixed;
     bottom: 0;
@@ -2461,5 +2567,25 @@ select {
   
     .portfolio-footer-email {
       width: 100px;
+    }
+  
+    .plb-info {
+      position: static;
+      transform: none;
+      padding: 20px 20px 0;
+      max-width: 100%;
+    }
+  
+    .plb-main {
+      padding: 20px 20px 120px;
+    }
+  
+    .plb-img {
+      max-width: 100%;
+      max-height: 55vh;
+    }
+  
+    .plb-title {
+      font-size: 16px;
     }
   }

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router';
-import { Search, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAside } from '~/components/Aside';
 import { portfolioProjects, type PortfolioProject } from '~/lib/portfolioData';
 import gsap from 'gsap';
@@ -81,6 +81,87 @@ function PortfolioCard({
   );
 }
 
+function Lightbox({
+  project,
+  onClose,
+}: {
+  project: PortfolioProject;
+  onClose: () => void;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const isCollection = project.images.length > 1;
+
+  const prev = () => setActiveIndex(i => (i - 1 + project.images.length) % project.images.length);
+  const next = () => setActiveIndex(i => (i + 1) % project.images.length);
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'Escape') onClose();
+  };
+
+  return (
+    <div
+      className="plb-overlay"
+      onClick={onClose}
+      onKeyDown={handleKey}
+      tabIndex={0}
+    >
+      <div className="plb-inner" onClick={e => e.stopPropagation()}>
+
+        {/* Left — project info */}
+        <div className="plb-info">
+          <p className="plb-title">{project.title}</p>
+          {project.bio && <p className="plb-bio">{project.bio}</p>}
+          {isCollection && (
+            <p className="plb-count">
+              Look {activeIndex + 1} / {project.images.length}
+            </p>
+          )}
+        </div>
+
+        {/* Centre — main image */}
+        <div className="plb-main">
+          <button className="plb-close" onClick={onClose}>
+            <X size={16} strokeWidth={1.5} color="white" />
+          </button>
+          <img
+            src={project.images[activeIndex]}
+            alt={project.title}
+            className="plb-img"
+          />
+        </div>
+
+        {/* Bottom strip — only for collections */}
+        {isCollection && (
+          <div className="plb-strip-wrap">
+            <div className="plb-strip">
+              {project.images.map((src, i) => (
+                <button
+                  key={i}
+                  className={`plb-thumb${i === activeIndex ? ' plb-thumb--active' : ''}`}
+                  onClick={() => setActiveIndex(i)}
+                >
+                  <img src={src} alt={`${project.title} ${i + 1}`} loading="lazy" />
+                </button>
+              ))}
+            </div>
+            <div className="plb-arrows">
+              <button className="plb-arrow" onClick={prev}>
+                <ChevronLeft size={16} strokeWidth={1.5} color="white" />
+              </button>
+              <button className="plb-arrow" onClick={next}>
+                <ChevronRight size={16} strokeWidth={1.5} color="white" />
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
 export default function Portfolio() {
   const { open } = useAside();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -155,16 +236,7 @@ export default function Portfolio() {
       </div>
 
       {lightboxProject && (
-        <div className="portfolio-lightbox-overlay" onClick={() => setLightboxProject(null)}>
-          <div className="portfolio-lightbox" onClick={e => e.stopPropagation()}>
-            <button className="portfolio-lightbox-close" onClick={() => setLightboxProject(null)}>
-              <X size={18} strokeWidth={1.5} />
-            </button>
-            <img src={lightboxProject.images[0]} alt={lightboxProject.title} />
-            <p className="portfolio-lightbox-title">{lightboxProject.title}</p>
-            <p className="portfolio-lightbox-category">{lightboxProject.category}</p>
-          </div>
-        </div>
+        <Lightbox project={lightboxProject} onClose={() => setLightboxProject(null)} />
       )}
 
       <div className="portfolio-footer">

@@ -2,8 +2,9 @@ export type PortfolioProject = {
     id: string;
     title: string;
     category: 'Art' | 'Direction' | 'Music';
+    bio?: string;
     images: string[];
-};
+  };
 /** 
 {
     id: 'UniqueID',
@@ -27,8 +28,36 @@ export const portfolioProjects: PortfolioProject[] = [
         id: 'tr-2',
         title: 'True Religion Lookbook 2',
         category: 'Art',
+        bio:'The complete Jaff Saba x True Religion Samaurai Collection 2021',
         images: [
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/Untitled_7.png?v=1780081093?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/470FF168-4754-4269-98A9-D2EA0C1E9066.jpg?v=1742382213?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/AD13D4E1-EB1B-4D05-BA90-5D1BDAB5932E.jpg?v=1742382214?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4371.jpg?v=1742382217?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2746.jpg?v=1742382220?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4604.jpg?v=1742382222?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4369.jpg?v=1742382224?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4372.jpg?v=1742382228?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4373.jpg?v=1742382233https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4373.jpg?v=1742382233?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2666.jpg?v=1742382234?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2666.jpg?v=1742382234?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2714.jpg?v=1742382234?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2641.jpg?v=1742382235?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2710.jpg?v=1742382237?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_1889.jpg?v=1742382237?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2672.jpg?v=1742382238?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2668.jpg?v=1742382238?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2680.jpg?v=1742382238?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2669.jpg?v=1742382243?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2698.jpg?v=1742382243?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2700.jpg?v=1742382243?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2754.jpg?v=1742382245?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2753.jpg?v=1742382246?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2643.jpg?v=1742382251?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2641_f740d3ce-1489-420d-902c-18c0bbb721fc.jpg?v=1742382253?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2625.jpg?v=1742382254?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_2630.jpg?v=1742382254?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_4786.jpg?v=1742475211?width=400&format=webp',
         ],
     },
     {
