@@ -2229,7 +2229,7 @@ select {
     align-items: center;
     gap: 12px;
     width: max-content;
-    padding: 100px 0;
+    padding: 100px 0 100px 60px;
   }
   
   .portfolio-card {
