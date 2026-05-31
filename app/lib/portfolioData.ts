@@ -82,8 +82,7 @@ export const portfolioProjects: PortfolioProject[] = [
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_7396.jpg?v=1742382175',
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_6842.jpg?v=1742382175',
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/DSC7709.jpg?v=1742382178',
-            '',
-            '',
+            
 
         ],
     },
