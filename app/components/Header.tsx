@@ -1,8 +1,8 @@
-import {Suspense, useState} from 'react';
-import {Await, Link} from 'react-router';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {useAside} from '~/components/Aside';
-import {ShoppingBag, Menu, X, Search} from 'lucide-react';
+import { Suspense, useState } from 'react';
+import { Await, Link } from 'react-router';
+import type { HeaderQuery, CartApiQueryFragment } from 'storefrontapi.generated';
+import { useAside } from '~/components/Aside';
+import { ShoppingBag, Menu, X, Search } from 'lucide-react';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -11,9 +11,9 @@ interface HeaderProps {
   publicStoreDomain: string;
 }
 
-export function Header({header, cart}: HeaderProps) {
+export function Header({ header, cart }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const {open} = useAside();
+  const { open } = useAside();
 
   return (
     <header id="header">
@@ -22,13 +22,13 @@ export function Header({header, cart}: HeaderProps) {
           <Link to="/">Home</Link>
           <Link to="/collections/all">Store</Link>
         </div>
-  
+
         <div className="nav-logo">
           <Link to="/">
             <img src="/JaffaWordmarkTransparent(1).png" alt="Jaffa Saba" />
           </Link>
         </div>
-  
+
         <div className="nav-right">
           <button
             className="hamburger"
@@ -39,6 +39,7 @@ export function Header({header, cart}: HeaderProps) {
               : <Menu size={20} strokeWidth={1.5} color="#1a0a00" />
             }
           </button>
+          <Link className="nav-portfolio" to="/pages/portfolio">Portfolio</Link>
           <Link className="nav-contact" to="/pages/contact">Contact</Link>
           <button className="icon-btn" onClick={() => open('search')}>
             <Search size={18} strokeWidth={1.5} color="#1a0a00" />
@@ -46,11 +47,12 @@ export function Header({header, cart}: HeaderProps) {
           <CartToggle cart={cart} />
         </div>
       </nav>
-  
+
       {menuOpen && (
         <div className="mobile-menu">
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Store</Link>
+          <Link to="/pages/portfolio" onClick={() => setMenuOpen(false)}>Portfolio</Link>
           <Link to="/pages/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
         </div>
       )}
@@ -62,8 +64,8 @@ export function HeaderMenu() {
   return null;
 }
 
-function CartBadge({count}: {count: number | null}) {
-  const {open} = useAside();
+function CartBadge({ count }: { count: number | null }) {
+  const { open } = useAside();
 
   return (
     <button className="cart-toggle" onClick={() => open('cart')}>
@@ -75,7 +77,7 @@ function CartBadge({count}: {count: number | null}) {
   );
 }
 
-function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+function CartToggle({ cart }: Pick<HeaderProps, 'cart'>) {
   return (
     <Suspense fallback={<CartBadge count={null} />}>
       <Await resolve={cart}>

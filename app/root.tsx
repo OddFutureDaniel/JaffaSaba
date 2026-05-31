@@ -43,13 +43,13 @@ export async function loader(args: Route.LoaderArgs) {
   const { request, context } = args;
   const { env, storefront } = context;
 
-  const cookieHeader = request.headers.get('Cookie') ?? '';
-  const isAuthenticated = cookieHeader.includes('storefront_auth=true');
-  const url = new URL(request.url);
+  // const cookieHeader = request.headers.get('Cookie') ?? '';
+  // const isAuthenticated = cookieHeader.includes('storefront_auth=true');
+  // const url = new URL(request.url);
 
-  if (!isAuthenticated && url.pathname !== '/password') {
-    throw redirect('/password');
-  }
+  // if (!isAuthenticated && url.pathname !== '/password') {
+  //   throw redirect('/password');
+  // }
 
   const deferredData = loadDeferredData(args);
   const criticalData = await loadCriticalData(args);
