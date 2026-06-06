@@ -11,7 +11,7 @@ export type PortfolioProject = {
     title: 'Title',
     category: 'Art',
     images: [
-        'Link',
+        '?width=400&format=webp',
     ],
 },
 */
@@ -64,6 +64,7 @@ export const portfolioProjects: PortfolioProject[] = [
         id: 'tr-3',
         title: 'True Religion Lookbook 2',
         category: 'Art',
+        bio:'The first Jaffa Saba x True Religion collaborative collection',
         images: [
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/Untitled_8.png?v=1780081445?width=400&format=webp',
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/8777E0021_3c8e62cd-ca59-4df5-af96-9680c0730116.jpg?v=1742382169',
@@ -106,8 +107,13 @@ export const portfolioProjects: PortfolioProject[] = [
         id: '4NEM',
         title: '4NEM Chief Keef',
         category: 'Art',
+        bio:'The making of 4NEM | Chief Keef',
         images: [
             'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/C97E90C7-C35F-464F-B0D7-D538331AE693.jpg?v=1742398522?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_6789.jpg?v=1742381420?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/EF717E03-B01B-485C-8D7B-DECC868CEE1E.jpg?v=1742419821?width=400&format=webp',
+            'https://cdn.shopify.com/s/files/1/0791/8839/4310/files/IMG_8545.jpg?v=1742419838?width=400&format=webp',
+            '?width=400&format=webp',
         ],
     },
     {
