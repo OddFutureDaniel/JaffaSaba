@@ -1,13 +1,7 @@
 import { createContext, useContext } from 'react';
 import { useLocation } from 'react-router';
 
-const STORE_LAYOUT_ROUTES = [
-  '/collections/all',
-  '/collections/',
-  '/products/',
-  '/pages/',
-  '/password',
-];
+const STORE_LAYOUT_ROUTES: string[] = [];
 
 interface StorePageContextType {
   hideGlobalLayout: boolean;

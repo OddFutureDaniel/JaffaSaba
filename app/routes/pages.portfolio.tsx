@@ -75,6 +75,7 @@ function PortfolioCard({
           src={project.images[0]}
           alt={project.title}
           loading="lazy"
+          draggable={false}
         />
       </div>
     </div>
@@ -101,30 +102,22 @@ function Lightbox({
   };
 
   return (
-    <div
-      className="plb-overlay"
-      onClick={onClose}
-      onKeyDown={handleKey}
-      tabIndex={0}
-    >
-      <div className="plb-inner" onClick={e => e.stopPropagation()}>
-
-        {/* Left — project info */}
-        <div className="plb-info">
+    <div className="plb-overlay" onClick={onClose} onKeyDown={handleKey} tabIndex={0}>
+  <div className="plb-inner">
+    <button className="plb-close" onClick={onClose}>
+      <X size={16} strokeWidth={1.5} color="white" />
+    </button>
+    <div className="plb-info">
           <p className="plb-title">{project.title}</p>
           {project.bio && <p className="plb-bio">{project.bio}</p>}
           {isCollection && (
             <p className="plb-count">
-              Look {activeIndex + 1} / {project.images.length}
+               {activeIndex + 1} / {project.images.length}
             </p>
           )}
         </div>
 
-        {/* Centre — main image */}
-        <div className="plb-main">
-          <button className="plb-close" onClick={onClose}>
-            <X size={16} strokeWidth={1.5} color="white" />
-          </button>
+        <div className="plb-main" onClick={e => e.stopPropagation()}>
           <img
             src={project.images[activeIndex]}
             alt={project.title}
@@ -132,9 +125,16 @@ function Lightbox({
           />
         </div>
 
-        {/* Bottom strip — only for collections */}
         {isCollection && (
-          <div className="plb-strip-wrap">
+          <div className="plb-strip-wrap" onClick={e => e.stopPropagation()}>
+            <div className="plb-arrows">
+              <button className="plb-arrow" onClick={prev}>
+                <ChevronLeft size={20} strokeWidth={1.5} color="white" />
+              </button>
+              <button className="plb-arrow" onClick={next}>
+                <ChevronRight size={20} strokeWidth={1.5} color="white" />
+              </button>
+            </div>
             <div className="plb-strip">
               {project.images.map((src, i) => (
                 <button
@@ -146,14 +146,7 @@ function Lightbox({
                 </button>
               ))}
             </div>
-            <div className="plb-arrows">
-              <button className="plb-arrow" onClick={prev}>
-                <ChevronLeft size={16} strokeWidth={1.5} color="white" />
-              </button>
-              <button className="plb-arrow" onClick={next}>
-                <ChevronRight size={16} strokeWidth={1.5} color="white" />
-              </button>
-            </div>
+            
           </div>
         )}
 
@@ -163,64 +156,51 @@ function Lightbox({
 }
 
 export default function Portfolio() {
-  const { open } = useAside();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lightboxProject, setLightboxProject] = useState<PortfolioProject | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const dragDistance = useRef(0);
 
-  const PRIMARY_NAV = [
-    { title: 'Home', url: '/' },
-    { title: 'Contact', url: '/pages/contact' },
-  ];
+  const onMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragDistance.current = 0;
+    startX.current = e.pageX - (wrapperRef.current?.offsetLeft ?? 0);
+    scrollLeft.current = wrapperRef.current?.scrollLeft ?? 0;
+    if (wrapperRef.current) wrapperRef.current.style.cursor = 'grabbing';
+  };
 
-  const CATEGORY_NAV = [
-    { title: 'All', url: '/collections/all' },
-    { title: 'Auction', url: '/collections/auction' },
-    { title: 'Lookbooks', url: '/collections/lookbooks' },
-    { title: 'Accessories', url: '/collections/accessories' },
-  ];
+  const onMouseLeave = () => {
+    isDragging.current = false;
+    if (wrapperRef.current) wrapperRef.current.style.cursor = 'grab';
+  };
+
+  const onMouseUp = () => {
+    isDragging.current = false;
+    if (wrapperRef.current) wrapperRef.current.style.cursor = 'grab';
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    const x = e.pageX - (wrapperRef.current?.offsetLeft ?? 0);
+    const walk = (x - startX.current) * 1.1;
+    dragDistance.current = Math.abs(walk);
+    if (wrapperRef.current) wrapperRef.current.scrollLeft = scrollLeft.current - walk;
+  };
 
   return (
     <div className="portfolio-page">
-
-      <div className="store-grid-wrapper">
-        <header className="store-header">
-          <div className="store-header-logo">
-            <Link to="/">
-              <img src="/JaffaWordmarkTransparent(1).png" alt="Jaffa Saba" />
-            </Link>
-          </div>
-          <div className="store-header-icons">
-            <button
-              className="icon-btn mobile-hamburger"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen
-                ? <X size={20} strokeWidth={1.5} color="#1a0a00" />
-                : <Menu size={20} strokeWidth={1.5} color="#1a0a00" />
-              }
-            </button>
-            <button className="icon-btn" onClick={() => open('search')}>
-              <Search size={18} strokeWidth={1.5} color="#1a0a00" />
-            </button>
-            <button className="icon-btn" onClick={() => open('cart')}>
-              <ShoppingBag size={18} strokeWidth={1.5} color="#1a0a00" />
-            </button>
-          </div>
-        </header>
-      </div>
-
-      {mobileMenuOpen && (
-        <div className="store-mobile-menu">
-          {[...PRIMARY_NAV, ...CATEGORY_NAV].map((item) => (
-            <Link key={item.url} to={item.url} onClick={() => setMobileMenuOpen(false)}>
-              {item.title}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      <div className="portfolio-strip-wrapper">
+      <div
+        className="portfolio-strip-wrapper"
+        ref={wrapperRef}
+        onMouseDown={onMouseDown}
+        onMouseLeave={onMouseLeave}
+        onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove}
+      >
         <div className="portfolio-strip">
           {portfolioProjects.map((project, i) => (
             <PortfolioCard
@@ -229,7 +209,9 @@ export default function Portfolio() {
               index={i}
               totalCards={portfolioProjects.length}
               cardRefs={cardRefs}
-              onClick={() => setLightboxProject(project)}
+              onClick={() => {
+                if (dragDistance.current < 5) setLightboxProject(project);
+              }}
             />
           ))}
         </div>
@@ -253,7 +235,6 @@ export default function Portfolio() {
           </form>
         </div>
       </div>
-
     </div>
   );
 }

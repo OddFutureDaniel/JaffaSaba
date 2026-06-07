@@ -20,7 +20,8 @@ export function Header({ header, cart }: HeaderProps) {
       <nav id="header-nav">
         <div className="nav-left">
           <Link to="/">Home</Link>
-          <Link to="/collections/all">Store</Link>
+          <Link className="nav-portfolio" to="/pages/portfolio">Portfolio</Link>
+          {/* <Link to="/collections/all">Store</Link> */}
         </div>
 
         <div className="nav-logo">
@@ -39,7 +40,7 @@ export function Header({ header, cart }: HeaderProps) {
               : <Menu size={20} strokeWidth={1.5} color="#1a0a00" />
             }
           </button>
-          <Link className="nav-portfolio" to="/pages/portfolio">Portfolio</Link>
+          
           <Link className="nav-contact" to="/pages/contact">Contact</Link>
           <button className="icon-btn" onClick={() => open('search')}>
             <Search size={18} strokeWidth={1.5} color="#1a0a00" />
@@ -51,7 +52,7 @@ export function Header({ header, cart }: HeaderProps) {
       {menuOpen && (
         <div className="mobile-menu">
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Store</Link>
+          {/* <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Store</Link> */}
           <Link to="/pages/portfolio" onClick={() => setMenuOpen(false)}>Portfolio</Link>
           <Link to="/pages/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
         </div>
