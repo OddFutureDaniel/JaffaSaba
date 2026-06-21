@@ -2615,3 +2615,24 @@ select {
     pointer-events: none;
     draggable: false;
   }
+
+  @media (max-width: 750px) {
+    .portfolio-strip-wrapper {
+      padding: 120px 0 80px;
+    }
+  
+    .portfolio-strip {
+      gap: 44px;
+      padding: 60px 0 60px 32px;
+    }
+  
+    .portfolio-card {
+      width: 120px;
+      height: 160px;
+    }
+  
+    .portfolio-card-img-wrapper {
+      width: 120px;
+      height: 160px;
+    }
+  }
