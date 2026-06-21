@@ -221,11 +221,11 @@ export default function Portfolio() {
       <div className="portfolio-archive">
         {portfolioProjects.map((project, i) => {
           const align = ALIGNMENTS[i % ALIGNMENTS.length];
-          const isWide = i % 3 === 0;
+          
           return (
             <div
               key={project.id}
-              className={`portfolio-archive-item portfolio-archive-item--${align}${isWide ? ' portfolio-archive-item--wide' : ''}`}
+              className={`portfolio-archive-item portfolio-archive-item--${align}`}
               onClick={() => setLightboxProject(project)}
             >
               <span className="portfolio-archive-index">({String(i + 1).padStart(2, '0')})</span>
