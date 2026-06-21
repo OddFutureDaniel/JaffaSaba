@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router';
-import { Search, ShoppingBag, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useAside } from '~/components/Aside';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { portfolioProjects, type PortfolioProject } from '~/lib/portfolioData';
 import gsap from 'gsap';
 
@@ -103,20 +102,19 @@ function Lightbox({
 
   return (
     <div className="plb-overlay" onClick={onClose} onKeyDown={handleKey} tabIndex={0}>
-  <div className="plb-inner">
-    <button className="plb-close" onClick={onClose}>
-      <X size={16} strokeWidth={1.5} color="white" />
-    </button>
-    <div className="plb-info">
+      <div className="plb-inner">
+        <button className="plb-close" onClick={onClose}>
+          <X size={16} strokeWidth={1.5} color="white" />
+        </button>
+        <div className="plb-info">
           <p className="plb-title">{project.title}</p>
           {project.bio && <p className="plb-bio">{project.bio}</p>}
           {isCollection && (
             <p className="plb-count">
-               {activeIndex + 1} / {project.images.length}
+              {activeIndex + 1} / {project.images.length}
             </p>
           )}
         </div>
-
         <div className="plb-main" onClick={e => e.stopPropagation()}>
           <img
             src={project.images[activeIndex]}
@@ -124,7 +122,6 @@ function Lightbox({
             className="plb-img"
           />
         </div>
-
         {isCollection && (
           <div className="plb-strip-wrap" onClick={e => e.stopPropagation()}>
             <div className="plb-arrows">
@@ -146,14 +143,15 @@ function Lightbox({
                 </button>
               ))}
             </div>
-            
           </div>
         )}
-
       </div>
     </div>
   );
 }
+
+// Alternate alignment pattern for mobile archive
+const ALIGNMENTS = ['left', 'right', 'left', 'right', 'left'];
 
 export default function Portfolio() {
   const [lightboxProject, setLightboxProject] = useState<PortfolioProject | null>(null);
@@ -193,6 +191,8 @@ export default function Portfolio() {
 
   return (
     <div className="portfolio-page">
+
+      {/* Desktop horizontal strip */}
       <div
         className="portfolio-strip-wrapper"
         ref={wrapperRef}
@@ -215,6 +215,35 @@ export default function Portfolio() {
             />
           ))}
         </div>
+      </div>
+
+      {/* Mobile vertical archive */}
+      <div className="portfolio-archive">
+        {portfolioProjects.map((project, i) => {
+          const align = ALIGNMENTS[i % ALIGNMENTS.length];
+          const isWide = i % 3 === 0;
+          return (
+            <div
+              key={project.id}
+              className={`portfolio-archive-item portfolio-archive-item--${align}${isWide ? ' portfolio-archive-item--wide' : ''}`}
+              onClick={() => setLightboxProject(project)}
+            >
+              <span className="portfolio-archive-index">({String(i + 1).padStart(2, '0')})</span>
+              <div className="portfolio-archive-img-wrap">
+                <img
+                  src={project.images[0]}
+                  alt={project.title}
+                  loading="lazy"
+                  draggable={false}
+                />
+              </div>
+              <div className="portfolio-archive-meta">
+                <span className="portfolio-archive-title">{project.title}</span>
+                <span className="portfolio-archive-category">{project.category}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {lightboxProject && (
